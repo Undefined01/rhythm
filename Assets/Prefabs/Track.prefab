@@ -45,9 +45,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e1a8cf299ed61b4d8751b7808e96a10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioID: 0
-  eventID: noteTrack
-  SingleNote: {fileID: 1345115549305762787, guid: bdfe8a7026b63294c96daac789f03121, type: 3}
+  AudioID: 0
+  EventID: noteTrack
+  Key: 0
+  SingleNoteObject: {fileID: 1345115549305762787, guid: bdfe8a7026b63294c96daac789f03121, type: 3}
+  HoldNoteObject: {fileID: 1345115549305762787, guid: a9051e54eadf39942a4aecc2c7847b9c, type: 3}
+  startPos: {x: 0, y: 0, z: 10}
+  endPos: {x: 0, y: 0, z: 0}
+  FeedBackText: {fileID: 0}
 --- !u!1 &6971657980544125734
 GameObject:
   m_ObjectHideFlags: 0
@@ -75,7 +80,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6971657980544125734}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_Children: []
   m_Father: {fileID: 5246007103806572747}
@@ -170,7 +175,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7006238356640490559}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 5}
+  m_LocalPosition: {x: 0, y: 0, z: -5}
   m_LocalScale: {x: 0.1, y: 5, z: 0.1}
   m_Children: []
   m_Father: {fileID: 5246007103806572747}
