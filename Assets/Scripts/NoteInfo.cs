@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -64,4 +62,16 @@ public class NoteInfo
     /// <c>Note</c> 判定时的时间，以音乐的采样点为单位。
     /// </summary>
     public int ShouldHitAtSample;
+
+    /// <summary>
+    /// <c>Note</c> 在 <c>sampleTime</c> 时刻所在的位置。
+    /// </summary>
+    public Vector3 CalcPosition(int sampleTime)
+    {
+        var duration = ShouldHitAtSample - AppearedAtSample;
+        var deltaTime = sampleTime - AppearedAtSample;
+        var t = (float)deltaTime / duration;
+        var deltaPos = ShouldHitAtPos - AppearedAtPos;
+        return AppearedAtPos + deltaPos * t;
+    }
 }

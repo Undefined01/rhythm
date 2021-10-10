@@ -14,6 +14,7 @@ public class Track : MonoBehaviour
     public string EventID = "noteTrack";
     public KeyCode Key;
     public GameObject SingleNoteObject, HoldNoteObject;
+    public GameObject NoteLink;
 
     public Vector3 startPos, endPos;
 
@@ -23,10 +24,13 @@ public class Track : MonoBehaviour
     private KoreographyTrack rhythmTrack, eventTrack;
 
     private List<NoteInfo> noteInfos = new List<NoteInfo>();
+    private HashSet<(int, int)> noteEmited = new HashSet<(int, int)>();
 
     private TimeSpan MaxToleranceTime = TimeSpan.FromMilliseconds(500);
     private NoteInTrack singleNote;
     private NoteInTrack holdNote;
+
+    private NoteLink.UpdateNoteLinkNode updateNote2OfLastNoteLink;
 
     void Start()
     {
@@ -49,6 +53,8 @@ public class Track : MonoBehaviour
         singleNote.MissEvent += (object sender, Note note, int offset) => Judge(offset);
         holdNote.MissEvent += (object sender, Note note, int offset) => Judge(offset);
 
+        // Initialize NoteLinks
+
         // Create temporary "InstanciateNote" event
         rhythmTrack.EnsureEventOrder();
         var allEvents = rhythmTrack.GetAllEvents();
@@ -60,13 +66,14 @@ public class Track : MonoBehaviour
             genEvt.StartSample = evt.StartSample - advance;
             genEvt.EndSample = genEvt.StartSample;
             genEvt.Payload = new IntPayload { IntVal = noteInfos.Count };
+            var rnd = UnityEngine.Random.insideUnitSphere * 0.3f;
             noteInfos.Add(new NoteInfo {
                 Track = 1,
                 NoteType = NoteType.Single,
                 NoteStyle = NoteStyle.Normal,
                 Group = 0,
                 AppearedAtPos = startPos,
-                ShouldHitAtPos = endPos,
+                ShouldHitAtPos = endPos + rnd,
                 AppearedAtSample = genEvt.StartSample,
                 ShouldHitAtSample = evt.EndSample,
             });
@@ -78,27 +85,30 @@ public class Track : MonoBehaviour
         //     XmlSerializer xz = new XmlSerializer(noteInfos.GetType());
         //     xz.Serialize(writer, noteInfos);
         // }
-        Koreographer.Instance.RegisterForEventsWithTime(eventTrack.EventID, InstanciateNote);
+        Koreographer.Instance.RegisterForEvents(eventTrack.EventID, InstanciateNote);
     }
 
     void Update()
     {
         var currentSample = koreography.GetLatestSampleTime();
-        var noteAndOffset = singleNote.GetCurrentNoteAndSample(currentSample);
-        if (noteAndOffset != null && Input.GetKeyDown(Key))
         {
-            var (note, offset) = ((Note, int))noteAndOffset;
-            singleNote.Hit(note);
-            Judge(offset);
-        }
-        noteAndOffset = holdNote.GetCurrentNoteAndSample(currentSample);
-        if (noteAndOffset != null && Input.GetKey(Key))
-        {
-            var (note, offset) = ((Note, int))noteAndOffset;
-            if (offset >= 0)
+            var noteAndOffset = singleNote.GetCurrentNoteAndSample(currentSample);
+            if (noteAndOffset is(Note note, int offset) && Input.GetKeyDown(Key))
             {
-                holdNote.Hit(note);
+                singleNote.Hit(note);
                 Judge(offset);
+            }
+        }
+
+        {
+            var noteAndOffset = holdNote.GetCurrentNoteAndSample(currentSample);
+            if (noteAndOffset is(Note note, int offset) && Input.GetKey(Key))
+            {
+                if (offset >= 0)
+                {
+                    holdNote.Hit(note);
+                    Judge(offset);
+                }
             }
         }
     }
@@ -109,10 +119,16 @@ public class Track : MonoBehaviour
         Koreographer.Instance?.UnregisterForAllEvents(this);
     }
 
-    void InstanciateNote(KoreographyEvent evt, int sampleTime, int sampleDelta, DeltaSlice deltaSlice)
+    /// <summary>
+    /// 根据事件中所带的 noteID 在游戏中生成对应的 <c>Note</c> 和 <c>NoteLink</c>
+    /// </summary>
+    void InstanciateNote(KoreographyEvent evt)
     {
         var noteInfo = noteInfos[evt.GetIntValue()];
-        Debug.Log($"Add {noteInfo.ShouldHitAtSample}");
+        if (noteEmited.Contains((noteInfo.Track, noteInfo.AppearedAtSample)))
+            return;
+        noteEmited.Add((noteInfo.Track, noteInfo.AppearedAtSample));
+
         GameObject noteObject;
         Note note;
         switch (noteInfo.NoteType)
@@ -132,6 +148,26 @@ public class Track : MonoBehaviour
         }
         note.koreography = koreography;
         note.Info = noteInfo;
+
+        if (updateNote2OfLastNoteLink != null)
+            updateNote2OfLastNoteLink(note.Info);
+        InstanciateNoteLink(note.Info);
+    }
+
+    void InstanciateNoteLink(NoteInfo node1)
+    {
+        var noteLinkObject = GameObject.Instantiate(NoteLink);
+        var noteLink = noteLinkObject.GetComponent<NoteLink>();
+        Assert.IsNotNull(noteLink);
+        noteLink.koreography = koreography;
+        noteLink.node1 = node1;
+        noteLink.node2 = new NoteInfo {
+            AppearedAtPos = startPos,
+            ShouldHitAtPos = startPos,
+            AppearedAtSample = 0,
+            ShouldHitAtSample = 10000000,
+        };
+        updateNote2OfLastNoteLink = noteLink.UpdateNode2;
     }
 
     void Judge(int offset)
