@@ -1,30 +1,46 @@
+using System;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 using SonicBloom.Koreo;
 
-public class Note : MonoBehaviour
+public class Note
 {
-    public Koreography koreography;
+    Koreography koreography;
     public NoteInfo Info;
+    public NoteBehaviour NoteBehaviour = null;
 
-    void Start()
+    public bool Instantiated = false;
+
+    private NoteVerdict verdict;
+    public NoteVerdict Verdict
     {
-        transform.position = Info.AppearedAtPos;
+        get {
+            return verdict;
+        }
+        set {
+            if (verdict == null)
+            {
+                verdict = value;
+                NoteBehaviour?.SetVerdict(verdict);
+                OnHasVerdict?.Invoke(this, verdict);
+            }
+        }
+    }
+    public event Action<object, NoteVerdict> OnHasVerdict;
+
+    public Note(Koreography koreography, NoteInfo info)
+    {
+        this.koreography = koreography;
+        this.Info = info;
     }
 
-    void FixedUpdate()
+    public void SetNoteObject(GameObject obj)
     {
-        var currentSample = koreography.GetLatestSampleTime();
-        transform.position = Info.CalcPosition(currentSample);
-    }
-
-    public void Hit()
-    {
-        Destroy(this.gameObject);
-    }
-
-    public void Miss()
-    {
-        Destroy(this.gameObject);
+        NoteBehaviour = obj.GetComponent<NoteBehaviour>();
+        Assert.IsNotNull(NoteBehaviour);
+        NoteBehaviour.koreography = koreography;
+        NoteBehaviour.Info = Info;
+        NoteBehaviour.OnDestroyEvent += () => NoteBehaviour = null;
     }
 }

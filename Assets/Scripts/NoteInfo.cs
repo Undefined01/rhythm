@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 表示<c>Note</c>的类型
+/// 表示 <c>Note</c> 的类型
 /// </summary>
 public enum NoteType
 {
@@ -19,6 +19,9 @@ public enum NoteType
     Hold,
 }
 
+/// <summary>
+/// 表示 <c>Note</c> 的渲染样式
+/// </summary>
 public enum NoteStyle
 {
     Normal,

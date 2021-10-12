@@ -8,6 +8,15 @@ using UnityEngine.Assertions;
 
 using SonicBloom.Koreo;
 
+/// <summary>
+/// 点击输入处理流程：
+/// 由 <c>Track</c> 负责在特定时间生成 <c>Note</c> ，并获取玩家输入。
+/// 当检测到玩家输入时，计算当前还在轨道上的最早的 <c>Note</c>，并对延迟进行判定。
+/// 判定结果通过直接调用 <c>Note.UpdateVerdict</c> 通知 <c>Note</c>。
+/// <c>Note</c> 接收到判定结果并播放相应的动画。
+/// <c>NoteGroup</c> 会监听组内 <c>Note</c> 的判定结果，
+/// 如果 <c>Note</c> 接收到 Miss 判定，则会直接给 <c>NoteGroup</c> 中的所有
+/// </summary>
 public class Track : MonoBehaviour
 {
     public int AudioID;
@@ -23,12 +32,11 @@ public class Track : MonoBehaviour
     private Koreography koreography;
     private KoreographyTrack rhythmTrack, eventTrack;
 
-    private List<NoteInfo> noteInfos = new List<NoteInfo>();
-    private HashSet<(int, int)> noteEmited = new HashSet<(int, int)>();
+    private List<Note> notes;
+    private Dictionary<int, NoteGroup> noteGroups = new Dictionary<int, NoteGroup>();
 
-    private TimeSpan MaxToleranceTime = TimeSpan.FromMilliseconds(500);
-    private NoteInTrack singleNote;
-    private NoteInTrack holdNote;
+    private TimeSpan MaxTolerantTime = TimeSpan.FromMilliseconds(500);
+    private NoteInTrack noteInTrack;
 
     private NoteLink.UpdateNoteLinkNode updateNote2OfLastNoteLink;
 
@@ -47,69 +55,66 @@ public class Track : MonoBehaviour
         koreography.AddTrack(eventTrack);
 
         // Initialize parameters
-        var MaxToleranceSample = (int)(MaxToleranceTime.TotalSeconds * koreography.SampleRate);
-        singleNote = new NoteInTrack(MaxToleranceSample);
-        holdNote = new NoteInTrack(MaxToleranceSample);
-        singleNote.MissEvent += (object sender, Note note, int offset) => Judge(offset);
-        holdNote.MissEvent += (object sender, Note note, int offset) => Judge(offset);
+        var MaxToleranceSample = (int)(MaxTolerantTime.TotalSeconds * koreography.SampleRate);
+        noteInTrack = new NoteInTrack(MaxToleranceSample);
 
-        // Initialize NoteLinks
-
-        // Create temporary "InstanciateNote" event
-        rhythmTrack.EnsureEventOrder();
-        var allEvents = rhythmTrack.GetAllEvents();
-        foreach (var evt in allEvents)
+        // Read noteInfos
+        using (var reader = System.IO.File.OpenRead($"track{EventID}.xml"))
         {
-            var genEvt = new KoreographyEvent();
-            var interval = 1.0;
-            var advance = (int)(koreography.SampleRate * interval);
-            genEvt.StartSample = evt.StartSample - advance;
-            genEvt.EndSample = genEvt.StartSample;
-            genEvt.Payload = new IntPayload { IntVal = noteInfos.Count };
-            var rnd = UnityEngine.Random.insideUnitSphere * 0.3f;
-            noteInfos.Add(new NoteInfo {
-                Track = 1,
-                NoteType = NoteType.Single,
-                NoteStyle = NoteStyle.Normal,
-                Group = 0,
-                AppearedAtPos = startPos,
-                ShouldHitAtPos = endPos + rnd,
-                AppearedAtSample = genEvt.StartSample,
-                ShouldHitAtSample = evt.EndSample,
-            });
-            eventTrack.AddEvent(genEvt);
+            XmlSerializer xz = new XmlSerializer(typeof(List<NoteInfo>));
+            var noteInfos = (List<NoteInfo>)xz.Deserialize(reader);
+            notes = noteInfos
+                        .Select((info, idx) => {
+                            var genEvt = new KoreographyEvent();
+                            var interval = 1.0;
+                            var advance = (int)(koreography.SampleRate * interval);
+                            genEvt.StartSample = info.AppearedAtSample;
+                            genEvt.EndSample = genEvt.StartSample;
+                            genEvt.Payload = new IntPayload { IntVal = idx };
+                            eventTrack.AddEvent(genEvt);
+
+    var note = new Note(koreography, info);
+
+                            if (info.Group != 0)
+                            {
+                                if (!noteGroups.ContainsKey(info.Group))
+                                    noteGroups[info.Group] = new NoteGroup();
+                                var group = noteGroups[info.Group];
+                                group.Add(note);
+                            }
+
+                            return note;
+                        })
+                        .ToList();
         }
 
-        // using (var writer = System.IO.File.CreateText("track1.xml"))
-        // {
-        //     XmlSerializer xz = new XmlSerializer(noteInfos.GetType());
-        //     xz.Serialize(writer, noteInfos);
-        // }
         Koreographer.Instance.RegisterForEvents(eventTrack.EventID, InstanciateNote);
     }
 
     void Update()
     {
         var currentSample = koreography.GetLatestSampleTime();
-        {
-            var noteAndOffset = singleNote.GetCurrentNoteAndSample(currentSample);
-            if (noteAndOffset is(Note note, int offset) && Input.GetKeyDown(Key))
-            {
-                singleNote.Hit(note);
-                Judge(offset);
-            }
-        }
+        var noteAndOffset = noteInTrack.GetCurrentNoteAndSample(currentSample);
+        if (noteAndOffset == null)
+            return;
+        var (note, offset) = ((Note, int))noteAndOffset;
 
+        switch (note.Info.NoteType)
         {
-            var noteAndOffset = holdNote.GetCurrentNoteAndSample(currentSample);
-            if (noteAndOffset is(Note note, int offset) && Input.GetKey(Key))
+        case NoteType.Single:
+            if (Input.GetKeyDown(Key))
             {
-                if (offset >= 0)
-                {
-                    holdNote.Hit(note);
-                    Judge(offset);
-                }
+                noteInTrack.Remove(note);
+                note.Verdict = JudgeNote(offset);
             }
+            break;
+        case NoteType.Hold:
+            if (offset >= 0 && Input.GetKey(Key))
+            {
+                noteInTrack.Remove(note);
+                note.Verdict = JudgeNote(offset);
+            }
+            break;
         }
     }
 
@@ -124,30 +129,37 @@ public class Track : MonoBehaviour
     /// </summary>
     void InstanciateNote(KoreographyEvent evt)
     {
-        var noteInfo = noteInfos[evt.GetIntValue()];
-        if (noteEmited.Contains((noteInfo.Track, noteInfo.AppearedAtSample)))
+        var note = notes[evt.GetIntValue()];
+        if (note.Instantiated)
             return;
-        noteEmited.Add((noteInfo.Track, noteInfo.AppearedAtSample));
+        note.Instantiated = true;
 
         GameObject noteObject;
-        Note note;
-        switch (noteInfo.NoteType)
+        switch (note.Info.NoteType)
         {
         case NoteType.Single:
             noteObject = GameObject.Instantiate(SingleNoteObject);
-            note = noteObject.GetComponent<Note>();
-            singleNote.Add(noteInfo.ShouldHitAtSample, note);
+            note.SetNoteObject(noteObject);
             break;
         case NoteType.Hold:
             noteObject = GameObject.Instantiate(HoldNoteObject);
-            note = noteObject.GetComponent<Note>();
-            holdNote.Add(noteInfo.ShouldHitAtSample, note);
+            note.SetNoteObject(noteObject);
             break;
         default:
             return;
         }
-        note.koreography = koreography;
-        note.Info = noteInfo;
+        noteInTrack.Add(note);
+
+        if (note.Info.Group != 0)
+        {
+            var group = noteGroups[note.Info.Group];
+            note.OnHasVerdict += group.UpdateVerdict;
+            group.OnHasVerdict += HandleVerdict;
+        }
+        else
+        {
+            note.OnHasVerdict += HandleVerdict;
+        }
 
         if (updateNote2OfLastNoteLink != null)
             updateNote2OfLastNoteLink(note.Info);
@@ -170,17 +182,15 @@ public class Track : MonoBehaviour
         updateNote2OfLastNoteLink = noteLink.UpdateNode2;
     }
 
-    void Judge(int offset)
+    void HandleVerdict(object sender, NoteVerdict verdict)
     {
-        var ms = offset * 1000 / koreography.SampleRate;
-        if (ms > 500 || ms < -500)
-            FeedBackText.text = $"Miss ({ms}ms)";
-        else if (ms > 200 || ms < -200)
-            FeedBackText.text = $"Bad ({ms}ms)";
-        else if (ms > 70 || ms < -70)
-            FeedBackText.text = $"Good ({ms}ms)";
-        else
-            FeedBackText.text = $"Perfect ({ms}ms)";
+        FeedBackText.text = $"{verdict.Grade} ({verdict.OffsetMs}ms)";
+    }
+
+    NoteVerdict JudgeNote(int offsetSample)
+    {
+        var offsetMs = offsetSample * 1000 / koreography.SampleRate;
+        return new NoteVerdict(offsetMs);
     }
 }
 
@@ -191,14 +201,13 @@ public class NoteInTrack
         this.MaxTolerantSample = MaxTolerantSample;
     }
 
-    public void Add(int sampleTime, Note note)
+    public void Add(Note note)
     {
-        notes.Add(sampleTime, note);
+        notes.Add(note.Info.ShouldHitAtSample, note);
     }
-    public void Hit(Note note)
+    public void Remove(Note note)
     {
         notes.Remove(note.Info.ShouldHitAtSample);
-        note.Hit();
     }
 
     /// <summary>
@@ -215,9 +224,8 @@ public class NoteInTrack
             if (offset > MaxTolerantSample)
             {
                 // Too late, raise `MissEvent`
-                MissEvent?.Invoke(this, note, offset);
+                note.Verdict = new NoteVerdict(505);
                 notes.Remove(hitAtSample);
-                note.Miss();
             }
             else
             {
@@ -231,9 +239,6 @@ public class NoteInTrack
         }
         return null;
     }
-
-    public delegate void MissHandler(object sender, Note note, int offset);
-    public event MissHandler MissEvent;
 
     private int MaxTolerantSample;
     private SortedDictionary<int, Note> notes = new SortedDictionary<int, Note>();
