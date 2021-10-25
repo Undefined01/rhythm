@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-class NoteGroup
+public class NoteGroup
 {
     private List<Note> notes = new List<Note>();
     private int hitCount = 0;

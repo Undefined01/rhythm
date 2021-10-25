@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Serialization;
+
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Assertions;
 
 using SonicBloom.Koreo;
@@ -19,76 +18,33 @@ using SonicBloom.Koreo;
 /// </summary>
 public class Track : MonoBehaviour
 {
-    public int AudioID;
-    public string EventID = "noteTrack";
+    public int TrackId;
     public KeyCode Key;
     public GameObject SingleNoteObject, HoldNoteObject;
     public GameObject NoteLink;
 
-    public Vector3 startPos, endPos;
+    public Koreography koreography;
+    public KoreographyTrack EventTrack;
 
-    public Text FeedBackText;
+    public List<Note> Notes;
+    public Dictionary<int, NoteGroup> NoteGroups;
+    public Action<object, NoteVerdict> HandleVerdict;
 
-    private Koreography koreography;
-    private KoreographyTrack rhythmTrack, eventTrack;
-
-    private List<Note> notes;
-    private Dictionary<int, NoteGroup> noteGroups = new Dictionary<int, NoteGroup>();
-
-    private TimeSpan MaxTolerantTime = TimeSpan.FromMilliseconds(500);
+    private TimeSpan MaxTolerantTime = TimeSpan.FromMilliseconds(200);
     private NoteInTrack noteInTrack;
 
     private NoteLink.UpdateNoteLinkNode updateNote2OfLastNoteLink;
 
     void Start()
     {
-        // Get rhythm track
-        koreography = Koreographer.Instance.GetKoreographyAtIndex(AudioID);
-        Assert.IsNotNull(koreography, $"Cannot find koreography {AudioID}");
-        rhythmTrack = koreography.GetTrackByID(EventID);
-        Assert.IsNotNull(rhythmTrack, $"Cannot find rhythm track {EventID}");
-
-        // Create an empty track for registering runtime event
-        eventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
-        Assert.IsNotNull(rhythmTrack, $"Cannot create event track");
-        eventTrack.EventID = $"runtimeEventTrack-{EventID}";
-        koreography.AddTrack(eventTrack);
+        Assert.IsNotNull(koreography, $"Koreography of track {TrackId} has not been set");
+        Assert.IsNotNull(EventTrack, $"Event track of track {TrackId} has not been set");
 
         // Initialize parameters
         var MaxToleranceSample = (int)(MaxTolerantTime.TotalSeconds * koreography.SampleRate);
         noteInTrack = new NoteInTrack(MaxToleranceSample);
 
-        // Read noteInfos
-        using (var reader = System.IO.File.OpenRead($"track{EventID}.xml"))
-        {
-            XmlSerializer xz = new XmlSerializer(typeof(List<NoteInfo>));
-            var noteInfos = (List<NoteInfo>)xz.Deserialize(reader);
-            notes = noteInfos
-                        .Select((info, idx) => {
-                            var genEvt = new KoreographyEvent();
-                            var interval = 1.0;
-                            var advance = (int)(koreography.SampleRate * interval);
-                            genEvt.StartSample = info.AppearedAtSample;
-                            genEvt.EndSample = genEvt.StartSample;
-                            genEvt.Payload = new IntPayload { IntVal = idx };
-                            eventTrack.AddEvent(genEvt);
-
-    var note = new Note(koreography, info);
-
-                            if (info.Group != 0)
-                            {
-                                if (!noteGroups.ContainsKey(info.Group))
-                                    noteGroups[info.Group] = new NoteGroup();
-                                var group = noteGroups[info.Group];
-                                group.Add(note);
-                            }
-
-                            return note;
-                        })
-                        .ToList();
-        }
-
-        Koreographer.Instance.RegisterForEvents(eventTrack.EventID, InstanciateNote);
+        Koreographer.Instance.RegisterForEvents(EventTrack.EventID, InstanciateNote);
     }
 
     void Update()
@@ -120,7 +76,7 @@ public class Track : MonoBehaviour
 
     void OnDestroy()
     {
-        koreography?.RemoveTrack(eventTrack);
+        koreography?.RemoveTrack(EventTrack);
         Koreographer.Instance?.UnregisterForAllEvents(this);
     }
 
@@ -129,7 +85,7 @@ public class Track : MonoBehaviour
     /// </summary>
     void InstanciateNote(KoreographyEvent evt)
     {
-        var note = notes[evt.GetIntValue()];
+        var note = Notes[evt.GetIntValue()];
         if (note.Instantiated)
             return;
         note.Instantiated = true;
@@ -152,7 +108,7 @@ public class Track : MonoBehaviour
 
         if (note.Info.Group != 0)
         {
-            var group = noteGroups[note.Info.Group];
+            var group = NoteGroups[note.Info.Group];
             note.OnHasVerdict += group.UpdateVerdict;
             group.OnHasVerdict += HandleVerdict;
         }
@@ -174,17 +130,12 @@ public class Track : MonoBehaviour
         noteLink.koreography = koreography;
         noteLink.node1 = node1;
         noteLink.node2 = new NoteInfo {
-            AppearedAtPos = startPos,
-            ShouldHitAtPos = startPos,
+            AppearedAtPos = new Vector3(0, 0, 10),
+            ShouldHitAtPos = new Vector3(0, 0, 10),
             AppearedAtSample = 0,
-            ShouldHitAtSample = 10000000,
+            ShouldHitAtSample = 1000000000,
         };
         updateNote2OfLastNoteLink = noteLink.UpdateNode2;
-    }
-
-    void HandleVerdict(object sender, NoteVerdict verdict)
-    {
-        FeedBackText.text = $"{verdict.Grade} ({verdict.OffsetMs}ms)";
     }
 
     NoteVerdict JudgeNote(int offsetSample)

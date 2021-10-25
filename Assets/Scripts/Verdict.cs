@@ -19,11 +19,11 @@ public class NoteVerdict
     public NoteGrade Grade
     {
         get {
-            if (OffsetMs >= 500 || OffsetMs <= -500)
+            if (OffsetMs >= 200 || OffsetMs <= -200)
                 return NoteGrade.Miss;
-            else if (OffsetMs >= 200 || OffsetMs <= -200)
+            else if (OffsetMs >= 130 || OffsetMs <= -130)
                 return NoteGrade.Bad;
-            else if (OffsetMs >= 70 || OffsetMs <= -70)
+            else if (OffsetMs >= 60 || OffsetMs <= -60)
                 return NoteGrade.Good;
             else
                 return NoteGrade.Perfect;

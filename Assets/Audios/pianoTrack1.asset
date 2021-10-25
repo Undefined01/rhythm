@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mEventID: pianoTrack1
   mEventList:
+  - mStartSample: 0
+    mEndSample: 0
   - mStartSample: 47039
     mEndSample: 47039
   - mStartSample: 68207

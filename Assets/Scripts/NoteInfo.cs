@@ -66,6 +66,18 @@ public class NoteInfo
     /// </summary>
     public int ShouldHitAtSample;
 
+    public NoteInfo() {}
+    public NoteInfo(NoteInfo info) {
+        this.Track = info.Track;
+        this.NoteType = info.NoteType;
+        this.NoteStyle = info.NoteStyle;
+        this.Group = info.Group;
+        this.AppearedAtPos = info.AppearedAtPos;
+        this.ShouldHitAtPos = info.ShouldHitAtPos;
+        this.AppearedAtSample = info.AppearedAtSample;
+        this.ShouldHitAtSample = info.ShouldHitAtSample;
+    }
+
     /// <summary>
     /// <c>Note</c> 在 <c>sampleTime</c> 时刻所在的位置。
     /// </summary>
