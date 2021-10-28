@@ -35,13 +35,15 @@ public class TrackManager : MonoBehaviour
     int _accuracyD = 0;
     float accuracy => _accuracyD == 0 ? 1 : (float)_accuracyN / _accuracyD;
 
-    int accuracyTot = 0;
+    // int accuracyTot = 0;
 
     void Awake()
     {
         // Get rhythm track
         koreography = Koreographer.Instance.GetKoreographyAtIndex(AudioID);
         Assert.IsNotNull(koreography, $"Cannot find koreography {AudioID}");
+        
+        Config.Set(koreography);
 
         // Assert.AreEqual(Tracks.Count, NumOfTrack);
         Assert.IsTrue(TrackObjects.All(t => t != null));
@@ -51,12 +53,20 @@ public class TrackManager : MonoBehaviour
                      .Select(to => {
                          var track = to.GetComponent<Track>();
                          Assert.IsNotNull(track, $"Failed to get `Track` Component of {to}");
-                         var eventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
-                         Assert.IsNotNull(eventTrack, $"Cannot create event track");
-                         eventTrack.EventID = $"runtimeEventTrack-{track.TrackId}";
-                         koreography.AddTrack(eventTrack);
+
+                         var insEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
+                         Assert.IsNotNull(insEventTrack, $"Cannot create event track");
+                         insEventTrack.EventID = $"instantiateEventTrack-{track.TrackId}";
+                         koreography.AddTrack(insEventTrack);
+
+                         var missEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
+                         Assert.IsNotNull(missEventTrack, $"Cannot create event track");
+                         missEventTrack.EventID = $"missEventTrack-{track.TrackId}";
+                         koreography.AddTrack(missEventTrack);
+
                          track.koreography = koreography;
-                         track.EventTrack = eventTrack;
+                         track.InstantiateEventTrack = insEventTrack;
+                         track.MissEventTrack = missEventTrack;
                          track.Notes = new List<Note>();
                          track.NoteGroups = noteGroups;
                          track.HandleVerdict = HandleVerdict;
@@ -85,6 +95,31 @@ public class TrackManager : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        foreach (var touch in Input.touches)
+        {
+            HandleTouch(touch.position, touch.phase == TouchPhase.Began);
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            HandleTouch(Input.mousePosition, true);
+        }
+        else if (Input.GetMouseButton(0))
+        {
+            HandleTouch(Input.mousePosition, false);
+        }
+    }
+
+    void HandleTouch(Vector3 pos, bool isBegining)
+    {
+        var dis = Tracks.Select(t => (Vector3.Distance(pos, Camera.main.WorldToScreenPoint(t.TrackEndPoint)), t))
+                      .OrderBy(x => x.Item1);
+        foreach (var (_, track) in dis)
+            if (track.Click(isBegining))
+                break;
+    }
+
     protected virtual void AddNoteInfo(NoteInfo info)
     {
         var note = new Note(koreography, info);
@@ -92,13 +127,17 @@ public class TrackManager : MonoBehaviour
             throw new ArgumentOutOfRangeException($"轨道{info.Track}不存在（在{info.ShouldHitAtSample}处）");
         var idx = Tracks[info.Track - 1].Notes.Count;
 
-        var genEvt = new KoreographyEvent();
-        var interval = 1.0;
-        var advance = (int)(koreography.SampleRate * interval);
-        genEvt.StartSample = info.AppearedAtSample;
-        genEvt.EndSample = genEvt.StartSample;
-        genEvt.Payload = new IntPayload { IntVal = idx };
-        Tracks[info.Track - 1].EventTrack.AddEvent(genEvt);
+        var insEvt = new KoreographyEvent();
+        insEvt.StartSample = info.AppearedAtSample;
+        insEvt.EndSample = insEvt.StartSample;
+        insEvt.Payload = new IntPayload { IntVal = idx };
+        Tracks[info.Track - 1].InstantiateEventTrack.AddEvent(insEvt);
+
+        var missEvt = new KoreographyEvent();
+        missEvt.StartSample = info.ShouldHitAtSample + Config.MaxDelayHitSample;
+        missEvt.EndSample = missEvt.StartSample;
+        missEvt.Payload = new IntPayload { IntVal = idx };
+        Tracks[info.Track - 1].MissEventTrack.AddEvent(missEvt);
 
         Tracks[info.Track - 1].Notes.Add(note);
         if (info.Group != 0)

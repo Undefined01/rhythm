@@ -24,59 +24,54 @@ public class Track : MonoBehaviour
     public GameObject NoteLink;
 
     public Koreography koreography;
-    public KoreographyTrack EventTrack;
+    public KoreographyTrack InstantiateEventTrack;
+    public KoreographyTrack MissEventTrack;
 
     public List<Note> Notes;
     public Dictionary<int, NoteGroup> NoteGroups;
+
     public Action<object, NoteVerdict> HandleVerdict;
+    public Vector3 TrackEndPoint
+    {
+        get => noteLink.EndPoint;
+    }
 
-    private TimeSpan MaxTolerantTime = TimeSpan.FromMilliseconds(200);
     private NoteInTrack noteInTrack;
-
-    private NoteLink.UpdateNoteLinkNode updateNote2OfLastNoteLink;
+    private NoteLink noteLink;
 
     void Start()
     {
         Assert.IsNotNull(koreography, $"Koreography of track {TrackId} has not been set");
-        Assert.IsNotNull(EventTrack, $"Event track of track {TrackId} has not been set");
+        Assert.IsNotNull(InstantiateEventTrack, $"Track of instantiate event of #{TrackId} has not been set");
+        Assert.IsNotNull(MissEventTrack, $"Track of instantiate event of #{TrackId} has not been set");
 
         // Initialize parameters
-        var MaxToleranceSample = (int)(MaxTolerantTime.TotalSeconds * koreography.SampleRate);
-        noteInTrack = new NoteInTrack(MaxToleranceSample);
+        noteInTrack = new NoteInTrack(Notes);
+        var noteLinkObject = GameObject.Instantiate(NoteLink);
+        noteLink = noteLinkObject.GetComponent<NoteLink>();
+        noteLink.koreography = koreography;
+        Assert.IsNotNull(noteLink);
 
-        Koreographer.Instance.RegisterForEvents(EventTrack.EventID, InstanciateNote);
+        Koreographer.Instance.RegisterForEvents(InstantiateEventTrack.EventID, InstanciateNote);
+        Koreographer.Instance.RegisterForEvents(MissEventTrack.EventID, HandleNoteMiss);
     }
 
     void Update()
     {
-        var currentSample = koreography.GetLatestSampleTime();
-        var noteAndOffset = noteInTrack.GetCurrentNoteAndSample(currentSample);
-        if (noteAndOffset == null)
-            return;
-        var (note, offset) = ((Note, int))noteAndOffset;
-
-        switch (note.Info.NoteType)
+        if (Input.GetKeyDown(Key))
         {
-        case NoteType.Single:
-            if (Input.GetKeyDown(Key))
-            {
-                noteInTrack.Remove(note);
-                note.Verdict = JudgeNote(offset);
-            }
-            break;
-        case NoteType.Hold:
-            if (offset >= 0 && Input.GetKey(Key))
-            {
-                noteInTrack.Remove(note);
-                note.Verdict = JudgeNote(offset);
-            }
-            break;
+            Click(true);
+        }
+        else if (Input.GetKey(Key))
+        {
+            Click(false);
         }
     }
 
     void OnDestroy()
     {
-        koreography?.RemoveTrack(EventTrack);
+        koreography?.RemoveTrack(InstantiateEventTrack);
+        koreography?.RemoveTrack(MissEventTrack);
         Koreographer.Instance?.UnregisterForAllEvents(this);
     }
 
@@ -86,8 +81,10 @@ public class Track : MonoBehaviour
     void InstanciateNote(KoreographyEvent evt)
     {
         var note = Notes[evt.GetIntValue()];
-        if (note.Instantiated)
+        if (note.Instantiated) {
+            Debug.LogWarning($"Double instanciate of Note #{note.Info.ToString()}.");
             return;
+        }
         note.Instantiated = true;
 
         GameObject noteObject;
@@ -104,7 +101,6 @@ public class Track : MonoBehaviour
         default:
             return;
         }
-        noteInTrack.Add(note);
 
         if (note.Info.Group != 0)
         {
@@ -117,25 +113,42 @@ public class Track : MonoBehaviour
             note.OnHasVerdict += HandleVerdict;
         }
 
-        if (updateNote2OfLastNoteLink != null)
-            updateNote2OfLastNoteLink(note.Info);
-        InstanciateNoteLink(note.Info);
+        noteLink.Add(note);
     }
 
-    void InstanciateNoteLink(NoteInfo node1)
+    public void HandleNoteMiss(KoreographyEvent evt)
     {
-        var noteLinkObject = GameObject.Instantiate(NoteLink);
-        var noteLink = noteLinkObject.GetComponent<NoteLink>();
-        Assert.IsNotNull(noteLink);
-        noteLink.koreography = koreography;
-        noteLink.node1 = node1;
-        noteLink.node2 = new NoteInfo {
-            AppearedAtPos = new Vector3(0, 0, 10),
-            ShouldHitAtPos = new Vector3(0, 0, 10),
-            AppearedAtSample = 0,
-            ShouldHitAtSample = 1000000000,
-        };
-        updateNote2OfLastNoteLink = noteLink.UpdateNode2;
+        var note = Notes[evt.GetIntValue()];
+        if (note.Verdict == null) {
+            Debug.Log($"{koreography.GetLatestSampleTime()}, {note.Info.ShouldHitAtSample}");
+            note.Verdict = new NoteVerdict((int)Config.MaxAdvanceHit.TotalMilliseconds);
+        }
+    }
+
+    public bool Click(bool isBegining)
+    {
+        var currentSample = koreography.GetLatestSampleTime();
+        var noteAndOffset = noteInTrack.GetCurrentNoteAndSample(currentSample);
+        if (noteAndOffset == null)
+            return false;
+        var (note, offset) = ((Note, int))noteAndOffset;
+
+        switch (note.Info.NoteType)
+        {
+        case NoteType.Single:
+            if (isBegining)
+            {
+                note.Verdict = JudgeNote(offset);
+            }
+            return true;
+        case NoteType.Hold:
+            if (offset >= 0)
+            {
+                note.Verdict = JudgeNote(offset);
+            }
+            return true;
+        }
+        return false;
     }
 
     NoteVerdict JudgeNote(int offsetSample)
@@ -147,18 +160,10 @@ public class Track : MonoBehaviour
 
 public class NoteInTrack
 {
-    public NoteInTrack(int MaxTolerantSample)
+    public NoteInTrack(List<Note> notes)
     {
-        this.MaxTolerantSample = MaxTolerantSample;
-    }
-
-    public void Add(Note note)
-    {
-        notes.Add(note.Info.ShouldHitAtSample, note);
-    }
-    public void Remove(Note note)
-    {
-        notes.Remove(note.Info.ShouldHitAtSample);
+        foreach (var note in notes)
+            this.notes.Add(note.Info.ShouldHitAtSample, note);
     }
 
     /// <summary>
@@ -172,25 +177,23 @@ public class NoteInTrack
             var hitAtSample = kvPair.Key;
             var note = kvPair.Value;
             var offset = currentSample - hitAtSample;
-            if (offset > MaxTolerantSample)
+
+            if (note.Verdict != null)
             {
-                // Too late, raise `MissEvent`
-                note.Verdict = new NoteVerdict(505);
                 notes.Remove(hitAtSample);
+                continue;
             }
-            else
+
+            if (offset > -Config.MaxAdvanceHitSample)
             {
-                if (offset > -MaxTolerantSample)
-                {
-                    return (note, offset);
-                }
-                // Too early, ignored
-                return null;
+                notes.Remove(hitAtSample);
+                return (note, offset);
             }
+            // Too early, ignored
+            return null;
         }
         return null;
     }
 
-    private int MaxTolerantSample;
     private SortedDictionary<int, Note> notes = new SortedDictionary<int, Note>();
 }

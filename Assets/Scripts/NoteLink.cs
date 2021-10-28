@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 using SonicBloom.Koreo;
@@ -5,41 +7,45 @@ using SonicBloom.Koreo;
 public class NoteLink : MonoBehaviour
 {
     public Koreography koreography;
-    public NoteInfo node1, node2;
 
-    static Vector3 TrackStartPos = new Vector3(0, 0, 10);
-    static float TrackLen = 10;
+    static readonly Vector3 TrackStartPos = new Vector3(0, 0, 10);
 
-    private LineRenderer line;
+    List<Note> notes = new List<Note>();
+    LineRenderer line;
+    public Vector3 EndPoint { get; private set; }
 
     void Start()
     {
         line = GetComponent<LineRenderer>();
+        line.positionCount = 0;
+        line.SetPositions(new Vector3[] {});
         FixedUpdate();
     }
 
     void FixedUpdate()
     {
-        var currentSample = koreography.GetLatestSampleTime();
-        var pos1 = node1.CalcPosition(currentSample);
-        var pos2 = node2.CalcPosition(currentSample);
-        var t = CalcLinkSphereIntersection(pos2 - TrackStartPos, pos1 - pos2, TrackLen) ?? -1;
-        if ((pos2 - TrackStartPos).magnitude > TrackLen)
-        {
-            Destroy(this.gameObject);
+        if (notes.Count == 0)
             return;
-        }
-        if (t < 1)
+
+        var currentSample = koreography.GetLatestSampleTime();
+        var pos = notes.Select(x => x.Info.CalcPosition(currentSample)).ToList();
+        while (pos.Count >= 2 && pos[1].z <= 0)
+            pos.RemoveAt(0);
+        pos.Add(TrackStartPos);
+        if (pos.Count >= 2 && pos[0].z < 0)
         {
-            pos1 = pos2 + (pos1 - pos2) * t;
+            var pos1 = pos[0];
+            var pos2 = pos[1];
+            pos[0] = Vector3.Lerp(pos2, pos1, pos2.z / (pos2.z - pos1.z));
         }
-        line.SetPositions(new Vector3[] { pos2, pos1 });
+        EndPoint = pos[0];
+        line.positionCount = pos.Count;
+        line.SetPositions(pos.ToArray());
     }
 
-    public delegate void UpdateNoteLinkNode(NoteInfo node2);
-    public void UpdateNode2(NoteInfo node2)
+    public void Add(Note note)
     {
-        this.node2 = node2;
+        notes.Add(note);
     }
 
     float? CalcLinkSphereIntersection(Vector3 p0, Vector3 dp, float r)

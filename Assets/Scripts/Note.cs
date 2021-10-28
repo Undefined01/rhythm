@@ -25,6 +25,10 @@ public class Note
                 NoteBehaviour?.SetVerdict(verdict);
                 OnHasVerdict?.Invoke(this, verdict);
             }
+            else
+            {
+                Debug.LogWarning($"Double assignment of Note #{Info}.\nOriginal: {verdict}, Try set: {value}");
+            }
         }
     }
     public event Action<object, NoteVerdict> OnHasVerdict;
