@@ -8,12 +8,14 @@ using UnityEngine.UI;
 using UnityEngine.Assertions;
 
 using SonicBloom.Koreo;
+using SonicBloom.Koreo.Players;
 
 public class TrackManager : MonoBehaviour
 {
     public int AudioID = 0;
     public string NoteFile = "piano";
     public Text FeedBackText;
+    public int StartAtSample = 0;
 
     protected const int NumOfTrack = 4;
     public List<GameObject> TrackObjects;
@@ -42,7 +44,7 @@ public class TrackManager : MonoBehaviour
         // Get rhythm track
         koreography = Koreographer.Instance.GetKoreographyAtIndex(AudioID);
         Assert.IsNotNull(koreography, $"Cannot find koreography {AudioID}");
-        
+
         Config.Set(koreography);
 
         // Assert.AreEqual(Tracks.Count, NumOfTrack);
@@ -93,6 +95,9 @@ public class TrackManager : MonoBehaviour
                 }
             }
         }
+
+        var simplePlayer = GameObject.Find("Koreographer").GetComponent<SimpleMusicPlayer>();
+        simplePlayer.LoadSong(koreography, StartAtSample);
     }
 
     void Update()
@@ -117,7 +122,9 @@ public class TrackManager : MonoBehaviour
                       .OrderBy(x => x.Item1);
         foreach (var (_, track) in dis)
             if (track.Click(isBegining))
+            {
                 break;
+            }
     }
 
     protected virtual void AddNoteInfo(NoteInfo info)

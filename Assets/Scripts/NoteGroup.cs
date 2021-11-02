@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -17,16 +18,17 @@ public class NoteGroup
 
     public void UpdateVerdict(object sender, NoteVerdict verdict)
     {
-        if (end) return;
+        if (end)
+            return;
 
         if (verdict.Grade == NoteGrade.Miss)
         {
             end = true;
-            notes.ForEach(note => note.Verdict = verdict);
+            notes.Where(note => note.Verdict != null).Select(note => note.Verdict = verdict);
             OnHasVerdict?.Invoke(this, verdict);
             return;
         }
-        
+
         hitCount++;
         if (hitCount == notes.Count)
         {

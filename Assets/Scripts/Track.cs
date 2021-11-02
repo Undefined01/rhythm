@@ -81,8 +81,9 @@ public class Track : MonoBehaviour
     void InstanciateNote(KoreographyEvent evt)
     {
         var note = Notes[evt.GetIntValue()];
-        if (note.Instantiated) {
-            Debug.LogWarning($"Double instanciate of Note #{note.Info.ToString()}.");
+        if (note.Instantiated)
+        {
+            Debug.LogWarning($"Double instanciate of Note #{note.Info.ShouldHitAtSample}.");
             return;
         }
         note.Instantiated = true;
@@ -119,8 +120,8 @@ public class Track : MonoBehaviour
     public void HandleNoteMiss(KoreographyEvent evt)
     {
         var note = Notes[evt.GetIntValue()];
-        if (note.Verdict == null) {
-            Debug.Log($"{koreography.GetLatestSampleTime()}, {note.Info.ShouldHitAtSample}");
+        if (note.Verdict == null)
+        {
             note.Verdict = new NoteVerdict((int)Config.MaxAdvanceHit.TotalMilliseconds);
         }
     }
@@ -145,8 +146,9 @@ public class Track : MonoBehaviour
             if (offset >= 0)
             {
                 note.Verdict = JudgeNote(offset);
+                return true;
             }
-            return true;
+            return false;
         }
         return false;
     }
@@ -186,7 +188,6 @@ public class NoteInTrack
 
             if (offset > -Config.MaxAdvanceHitSample)
             {
-                notes.Remove(hitAtSample);
                 return (note, offset);
             }
             // Too early, ignored

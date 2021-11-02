@@ -27,7 +27,8 @@ public class Note
             }
             else
             {
-                Debug.LogWarning($"Double assignment of Note #{Info}.\nOriginal: {verdict}, Try set: {value}");
+                Debug.LogWarning(
+                    $"Double assignment of Note #{Info.ShouldHitAtSample}.\nOriginal: {verdict.OffsetMs}, Try set: {value.OffsetMs}");
             }
         }
     }

@@ -19,6 +19,5 @@ public static class Config
         SampleRate = koreography.SampleRate;
         MaxAdvanceHitSample = (int)(MaxAdvanceHit.TotalSeconds * SampleRate);
         MaxDelayHitSample = (int)(MaxDelayHit.TotalSeconds * SampleRate);
-        Debug.Log(MaxDelayHitSample);
     }
 }
