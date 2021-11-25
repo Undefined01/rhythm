@@ -16,7 +16,7 @@ public class NoteBehaviour : MonoBehaviour
 
     void FixedUpdate()
     {
-        var currentSample = koreography.GetLatestSampleTime();
+        var currentSample = Config.CurrentSample;
         transform.position = Info.CalcPosition(currentSample);
     }
 

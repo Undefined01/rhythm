@@ -18,17 +18,19 @@ using SonicBloom.Koreo;
 /// </summary>
 public class Track : MonoBehaviour
 {
+    [NonSerialized]
     public int TrackId;
+
     public KeyCode Key;
     public GameObject SingleNoteObject, HoldNoteObject;
     public GameObject NoteLink;
 
-    public Koreography koreography;
-    public KoreographyTrack InstantiateEventTrack;
-    public KoreographyTrack MissEventTrack;
+    Koreography koreography;
+    KoreographyTrack InstantiateEventTrack;
+    KoreographyTrack MissEventTrack;
 
-    public List<Note> Notes;
-    public Dictionary<int, NoteGroup> NoteGroups;
+    List<Note> Notes;
+    Dictionary<int, NoteGroup> NoteGroups;
 
     public Action<object, NoteVerdict> HandleVerdict;
     public Vector3 TrackEndPoint
@@ -36,24 +38,83 @@ public class Track : MonoBehaviour
         get => noteLink.EndPoint;
     }
 
-    private NoteInTrack noteInTrack;
-    private NoteLink noteLink;
+    NoteInTrack noteInTrack;
+    NoteLink noteLink;
 
     void Start()
     {
-        Assert.IsNotNull(koreography, $"Koreography of track {TrackId} has not been set");
-        Assert.IsNotNull(InstantiateEventTrack, $"Track of instantiate event of #{TrackId} has not been set");
-        Assert.IsNotNull(MissEventTrack, $"Track of instantiate event of #{TrackId} has not been set");
-
-        // Initialize parameters
-        noteInTrack = new NoteInTrack(Notes);
         var noteLinkObject = GameObject.Instantiate(NoteLink);
         noteLink = noteLinkObject.GetComponent<NoteLink>();
-        noteLink.koreography = koreography;
         Assert.IsNotNull(noteLink);
+    }
+
+    public void Init(List<Note> Notes, Dictionary<int, NoteGroup> NoteGroups)
+    {
+        this.Notes = Notes;
+        this.NoteGroups = NoteGroups;
+
+        InitKoreographyEvent();
+        SetupNotes();
+    }
+
+    void InitKoreographyEvent()
+    {
+        koreography = Config.Koreography;
+
+        InstantiateEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
+        Assert.IsNotNull(InstantiateEventTrack, $"Cannot create event track");
+        InstantiateEventTrack.EventID = $"instantiateEventTrack-{TrackId}";
+        Assert.IsTrue(koreography.AddTrack(InstantiateEventTrack));
+
+        MissEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
+        Assert.IsNotNull(MissEventTrack, $"Cannot create event track");
+        MissEventTrack.EventID = $"missEventTrack-{TrackId}";
+        Assert.IsTrue(koreography.AddTrack(MissEventTrack));
 
         Koreographer.Instance.RegisterForEvents(InstantiateEventTrack.EventID, InstanciateNote);
         Koreographer.Instance.RegisterForEvents(MissEventTrack.EventID, HandleNoteMiss);
+    }
+
+    void SetupNotes()
+    {
+        foreach (var idx in Enumerable.Range(0, Notes.Count))
+        {
+            var info = Notes[idx].Info;
+
+            var insEvt = new KoreographyEvent();
+            insEvt.StartSample = info.AppearedAtSample + Config.OffsetSample;
+            insEvt.EndSample = insEvt.StartSample;
+            insEvt.Payload = new IntPayload { IntVal = idx };
+            InstantiateEventTrack.AddEvent(insEvt);
+
+            var missEvt = new KoreographyEvent();
+            missEvt.StartSample = info.ShouldHitAtSample + Config.MaxDelayHitSample + Config.OffsetSample;
+            missEvt.EndSample = missEvt.StartSample;
+            missEvt.Payload = new IntPayload { IntVal = idx };
+            MissEventTrack.AddEvent(missEvt);
+        }
+        noteInTrack = new NoteInTrack(Notes);
+    }
+
+    public void CleanUp()
+    {
+        Koreographer.Instance?.UnregisterForAllEvents(this);
+        if (InstantiateEventTrack != null)
+        {
+            koreography.RemoveTrack(InstantiateEventTrack);
+            InstantiateEventTrack = null;
+        }
+        if (MissEventTrack != null)
+        {
+            koreography.RemoveTrack(MissEventTrack);
+            InstantiateEventTrack = null;
+        }
+
+        Notes?.ForEach(note => note.Dispose());
+        Notes = null;
+        NoteGroups = null;
+        noteInTrack = null;
+        noteLink.CleanUp();
     }
 
     void Update()
@@ -70,9 +131,7 @@ public class Track : MonoBehaviour
 
     void OnDestroy()
     {
-        koreography?.RemoveTrack(InstantiateEventTrack);
-        koreography?.RemoveTrack(MissEventTrack);
-        Koreographer.Instance?.UnregisterForAllEvents(this);
+        CleanUp();
     }
 
     /// <summary>
@@ -82,10 +141,7 @@ public class Track : MonoBehaviour
     {
         var note = Notes[evt.GetIntValue()];
         if (note.Instantiated)
-        {
-            Debug.LogWarning($"Double instanciate of Note #{note.Info.ShouldHitAtSample}.");
             return;
-        }
         note.Instantiated = true;
 
         GameObject noteObject;
@@ -121,14 +177,15 @@ public class Track : MonoBehaviour
     {
         var note = Notes[evt.GetIntValue()];
         if (note.Verdict == null)
-        {
-            note.Verdict = new NoteVerdict((int)Config.MaxAdvanceHit.TotalMilliseconds);
-        }
+            note.Verdict = NoteVerdict.Miss;
     }
 
     public bool Click(bool isBegining)
     {
-        var currentSample = koreography.GetLatestSampleTime();
+        if (koreography == null)
+            return false;
+
+        var currentSample = Config.CurrentSample;
         var noteAndOffset = noteInTrack.GetCurrentNoteAndSample(currentSample);
         if (noteAndOffset == null)
             return false;
@@ -139,24 +196,18 @@ public class Track : MonoBehaviour
         case NoteType.Single:
             if (isBegining)
             {
-                note.Verdict = JudgeNote(offset);
+                note.Verdict = NoteVerdict.FromSample(offset);
             }
             return true;
         case NoteType.Hold:
             if (offset >= 0)
             {
-                note.Verdict = JudgeNote(offset);
+                note.Verdict = NoteVerdict.FromSample(offset);
                 return true;
             }
             return false;
         }
         return false;
-    }
-
-    NoteVerdict JudgeNote(int offsetSample)
-    {
-        var offsetMs = offsetSample * 1000 / koreography.SampleRate;
-        return new NoteVerdict(offsetMs);
     }
 }
 

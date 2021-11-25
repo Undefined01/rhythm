@@ -4,7 +4,6 @@ using System.Linq;
 using System.Xml.Serialization;
 
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Assertions;
 
 using SonicBloom.Koreo;
@@ -12,72 +11,63 @@ using SonicBloom.Koreo.Players;
 
 public class TrackManager : MonoBehaviour
 {
-    public int AudioID = 0;
-    public string NoteFile = "piano";
-    public Text FeedBackText;
     public int StartAtSample = 0;
 
-    protected const int NumOfTrack = 4;
+    public Camera Camera;
     public List<GameObject> TrackObjects;
+
     protected List<Track> Tracks;
-    protected Dictionary<int, NoteGroup> noteGroups = new Dictionary<int, NoteGroup>();
+    protected List<List<Note>> notes;
+    protected Dictionary<int, NoteGroup> noteGroups;
     protected Koreography koreography;
+    protected SimpleMusicPlayer simplePlayer;
 
-    int maxCombo = 0;
-    int _combo = 0;
-    int combo
+    public VerdictStatistics Statistics;
+
+    public void CleanUp()
     {
-        get => _combo;
-        set {
-            _combo = value;
-            maxCombo = maxCombo > _combo? maxCombo : _combo;
-        }
-    }
-    int _accuracyN = 0;
-    int _accuracyD = 0;
-    float accuracy => _accuracyD == 0 ? 1 : (float)_accuracyN / _accuracyD;
+        Tracks?.ForEach(x => x.CleanUp());
+        simplePlayer.Stop();
 
-    // int accuracyTot = 0;
+        notes = null;
+        noteGroups = null;
+        Statistics = new VerdictStatistics();
+    }
 
     void Awake()
     {
-        // Get rhythm track
-        koreography = Koreographer.Instance.GetKoreographyAtIndex(AudioID);
-        Assert.IsNotNull(koreography, $"Cannot find koreography {AudioID}");
+        simplePlayer = GameObject.Find("Koreographer")?.GetComponent<SimpleMusicPlayer>();
+        Assert.IsNotNull(simplePlayer);
 
-        Config.Set(koreography);
-
-        // Assert.AreEqual(Tracks.Count, NumOfTrack);
         Assert.IsTrue(TrackObjects.All(t => t != null));
 
         // Create an empty track for registering runtime event
         Tracks = TrackObjects
-                     .Select(to => {
-                         var track = to.GetComponent<Track>();
-                         Assert.IsNotNull(track, $"Failed to get `Track` Component of {to}");
-
-                         var insEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
-                         Assert.IsNotNull(insEventTrack, $"Cannot create event track");
-                         insEventTrack.EventID = $"instantiateEventTrack-{track.TrackId}";
-                         koreography.AddTrack(insEventTrack);
-
-                         var missEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
-                         Assert.IsNotNull(missEventTrack, $"Cannot create event track");
-                         missEventTrack.EventID = $"missEventTrack-{track.TrackId}";
-                         koreography.AddTrack(missEventTrack);
-
-                         track.koreography = koreography;
-                         track.InstantiateEventTrack = insEventTrack;
-                         track.MissEventTrack = missEventTrack;
-                         track.Notes = new List<Note>();
-                         track.NoteGroups = noteGroups;
-                         track.HandleVerdict = HandleVerdict;
+                     .Select((trackObject, idx) => {
+                         var track = trackObject.GetComponent<Track>();
+                         Assert.IsNotNull(track);
+                         track.TrackId = idx + 1;
                          return track;
                      })
                      .ToList();
+    }
+
+    public void StartLevel(int LevelID)
+    {
+        CleanUp();
+
+        // Get rhythm track
+        koreography = Koreographer.Instance.GetKoreographyAtIndex(LevelID);
+        Assert.IsNotNull(koreography, $"Cannot find koreography {LevelID}");
+
+        Config.Set(koreography);
 
         // Read noteInfos
-        var noteInfoAsset = (TextAsset)Resources.Load(NoteFile);
+        notes = Enumerable.Range(0, 4).Select(_ => new List<Note>()).ToList();
+        noteGroups = new Dictionary<int, NoteGroup>();
+
+        Debug.Log(koreography.name);
+        var noteInfoAsset = (TextAsset)Resources.Load(koreography.name);
         var noteInfoStr = System.Text.Encoding.ASCII.GetBytes(noteInfoAsset.text);
         using (var reader = new System.IO.MemoryStream(noteInfoStr))
         {
@@ -85,18 +75,26 @@ public class TrackManager : MonoBehaviour
             var noteInfos = (List<NoteInfo>)xz.Deserialize(reader);
             foreach (var info in noteInfos)
             {
-                try
+                var note = new Note(info);
+                if (info.Track <= 0 || info.Track > Tracks.Count)
                 {
-                    AddNoteInfo(info);
+                    Debug.LogWarning($"轨道{info.Track}不存在（在{info.ShouldHitAtSample}处）");
+                    continue;
                 }
-                catch (ArgumentOutOfRangeException ex)
+                notes[info.Track - 1].Add(note);
+                if (info.Group != 0)
                 {
-                    Debug.LogError(ex);
+                    if (!noteGroups.ContainsKey(info.Group))
+                        noteGroups[info.Group] = new NoteGroup();
+                    noteGroups[info.Group].Add(note);
                 }
             }
         }
+        foreach (var i in Enumerable.Range(0, Tracks.Count))
+        {
+            Tracks[i].Init(notes[i], noteGroups);
+        }
 
-        var simplePlayer = GameObject.Find("Koreographer").GetComponent<SimpleMusicPlayer>();
         simplePlayer.LoadSong(koreography, StartAtSample);
     }
 
@@ -127,63 +125,8 @@ public class TrackManager : MonoBehaviour
             }
     }
 
-    protected virtual void AddNoteInfo(NoteInfo info)
-    {
-        var note = new Note(koreography, info);
-        if (info.Track <= 0 || info.Track > Tracks.Count)
-            throw new ArgumentOutOfRangeException($"轨道{info.Track}不存在（在{info.ShouldHitAtSample}处）");
-        var idx = Tracks[info.Track - 1].Notes.Count;
-
-        var insEvt = new KoreographyEvent();
-        insEvt.StartSample = info.AppearedAtSample;
-        insEvt.EndSample = insEvt.StartSample;
-        insEvt.Payload = new IntPayload { IntVal = idx };
-        Tracks[info.Track - 1].InstantiateEventTrack.AddEvent(insEvt);
-
-        var missEvt = new KoreographyEvent();
-        missEvt.StartSample = info.ShouldHitAtSample + Config.MaxDelayHitSample;
-        missEvt.EndSample = missEvt.StartSample;
-        missEvt.Payload = new IntPayload { IntVal = idx };
-        Tracks[info.Track - 1].MissEventTrack.AddEvent(missEvt);
-
-        Tracks[info.Track - 1].Notes.Add(note);
-        if (info.Group != 0)
-        {
-            if (!noteGroups.ContainsKey(info.Group))
-                noteGroups[info.Group] = new NoteGroup();
-            var group = noteGroups[info.Group];
-            group.Add(note);
-        }
-    }
-
     protected virtual void HandleVerdict(object sender, NoteVerdict verdict)
     {
-        var grade = verdict.Grade;
-        switch (grade)
-        {
-        case NoteGrade.Perfect:
-            combo++;
-            AddAccuracy(100);
-            break;
-        case NoteGrade.Good:
-            combo++;
-            AddAccuracy(65);
-            break;
-        case NoteGrade.Bad:
-            combo = 0;
-            AddAccuracy(25);
-            break;
-        case NoteGrade.Miss:
-            combo = 0;
-            AddAccuracy(0);
-            break;
-        }
-        FeedBackText.text = $"{grade} ({verdict.OffsetMs}ms)\nCombo {combo}\nAccuracy {accuracy}";
-    }
-
-    void AddAccuracy(int percent)
-    {
-        _accuracyN += percent;
-        _accuracyD += 100;
+        Statistics.Add(verdict);
     }
 }

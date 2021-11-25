@@ -4,9 +4,8 @@ using UnityEngine.Assertions;
 
 using SonicBloom.Koreo;
 
-public class Note
+public class Note : IDisposable
 {
-    Koreography koreography;
     public NoteInfo Info;
     public NoteBehaviour NoteBehaviour = null;
 
@@ -22,6 +21,8 @@ public class Note
             if (verdict == null)
             {
                 verdict = value;
+                if (NoteBehaviour == null)
+                    Debug.LogWarning($"Verdicting Note #{Info.ShouldHitAtSample} without instance");
                 NoteBehaviour?.SetVerdict(verdict);
                 OnHasVerdict?.Invoke(this, verdict);
             }
@@ -34,9 +35,8 @@ public class Note
     }
     public event Action<object, NoteVerdict> OnHasVerdict;
 
-    public Note(Koreography koreography, NoteInfo info)
+    public Note(NoteInfo info)
     {
-        this.koreography = koreography;
         this.Info = info;
     }
 
@@ -44,8 +44,14 @@ public class Note
     {
         NoteBehaviour = obj.GetComponent<NoteBehaviour>();
         Assert.IsNotNull(NoteBehaviour);
-        NoteBehaviour.koreography = koreography;
         NoteBehaviour.Info = Info;
         NoteBehaviour.OnDestroyEvent += () => NoteBehaviour = null;
+    }
+
+    public void Dispose()
+    {
+        if (NoteBehaviour != null)
+            GameObject.Destroy(NoteBehaviour.gameObject);
+        NoteBehaviour = null;
     }
 }
