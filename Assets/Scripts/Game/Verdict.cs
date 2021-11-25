@@ -50,7 +50,7 @@ public class VerdictStatistics
     public int CurrentCombo { get; protected set; } = 0;
 
     public double AverageOffset => totalOffset / _Count;
-    public double Accuracy => (verdictCount[0] * 100 + verdictCount[1] * 65 + verdictCount[2] * 25) / _Count;
+    public double Accuracy => (verdictCount[0] * 1 + verdictCount[1] * 0.65 + verdictCount[2] * 0.25) / _Count;
 
     public int Score => (int)(Accuracy * 900_000 + MaxCombo * 100_000 / _Count);
 
