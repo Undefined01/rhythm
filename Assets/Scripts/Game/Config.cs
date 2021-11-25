@@ -21,6 +21,8 @@ public static class Config
     {
         Koreography = koreography;
 
+        Offset = TimeSpan.FromMilliseconds(SaveManager.Save.Settings.HitOffsetMs);
+
         SampleRate = koreography.SampleRate;
         MaxAdvanceHitSample = TimeToSample(MaxAdvanceHit);
         MaxDelayHitSample = TimeToSample(MaxDelayHit);

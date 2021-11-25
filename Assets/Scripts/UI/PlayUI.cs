@@ -13,6 +13,6 @@ public class PlayUI : MonoBehaviour
 
     void LateUpdate() {
         ComboText.text = $"连击 {TrackManager.Statistics.CurrentCombo}";
-        ScoreText.text = $"总分 {TrackManager.Statistics.Score}";
+        ScoreText.text = $"总分 {TrackManager.Statistics.Score:D7}";
     }
 }

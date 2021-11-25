@@ -73,6 +73,8 @@ public class TrackManager : MonoBehaviour
             var noteInfos = (List<NoteInfo>)xz.Deserialize(reader);
             foreach (var info in noteInfos)
             {
+                info.AppearedAtSample += Config.OffsetSample;
+                info.ShouldHitAtSample += Config.OffsetSample;
                 var note = new Note(info);
                 if (info.Track <= 0 || info.Track > Tracks.Count)
                 {
@@ -132,6 +134,7 @@ public class TrackManager : MonoBehaviour
 
     protected virtual void HandleVerdict(object sender, NoteVerdict verdict)
     {
+        Debug.Log($"Verdict #{verdict.Grade} {verdict.OffsetMs} ms");
         Statistics.Add(verdict);
     }
 }

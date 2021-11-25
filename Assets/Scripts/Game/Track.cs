@@ -83,13 +83,13 @@ public class Track : MonoBehaviour
             var info = Notes[idx].Info;
 
             var insEvt = new KoreographyEvent();
-            insEvt.StartSample = info.AppearedAtSample + Config.OffsetSample;
+            insEvt.StartSample = info.AppearedAtSample;
             insEvt.EndSample = insEvt.StartSample;
             insEvt.Payload = new IntPayload { IntVal = idx };
             InstantiateEventTrack.AddEvent(insEvt);
 
             var missEvt = new KoreographyEvent();
-            missEvt.StartSample = info.ShouldHitAtSample + Config.MaxDelayHitSample + Config.OffsetSample;
+            missEvt.StartSample = info.ShouldHitAtSample + Config.MaxDelayHitSample;
             missEvt.EndSample = missEvt.StartSample;
             missEvt.Payload = new IntPayload { IntVal = idx };
             MissEventTrack.AddEvent(missEvt);
