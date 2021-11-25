@@ -41,14 +41,18 @@ public class VerdictStatistics
     public int Count { get; protected set; } = 0;
     int[] verdictCount = new int[4];
 
+    int _Count => Count == 0 ? 1 : Count;
+
     public bool FullCombo => verdictCount[(int)NoteGrade.Miss] == 0;
     public bool AllPerfect => verdictCount[(int)NoteGrade.Perfect] == Count;
 
     public int MaxCombo { get; protected set; } = 0;
     public int CurrentCombo { get; protected set; } = 0;
 
-    public double AverageOffset => Count == 0 ? 1 : totalOffset / Count;
-    public double Accuracy => (verdictCount[0] * 100 + verdictCount[1] * 65 + verdictCount[2] * 25) / Count;
+    public double AverageOffset => totalOffset / _Count;
+    public double Accuracy => (verdictCount[0] * 100 + verdictCount[1] * 65 + verdictCount[2] * 25) / _Count;
+
+    public int Score => (int)(Accuracy * 900_000 + MaxCombo * 100_000 / _Count);
 
     public void Add(NoteVerdict verdict)
     {

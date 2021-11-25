@@ -107,8 +107,9 @@ public class Track : MonoBehaviour
         if (MissEventTrack != null)
         {
             koreography.RemoveTrack(MissEventTrack);
-            InstantiateEventTrack = null;
+            MissEventTrack = null;
         }
+        koreography = null;
 
         Notes?.ForEach(note => note.Dispose());
         Notes = null;

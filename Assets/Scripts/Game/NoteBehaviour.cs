@@ -6,7 +6,6 @@ using SonicBloom.Koreo;
 
 public class NoteBehaviour : MonoBehaviour
 {
-    public Koreography koreography;
     public NoteInfo Info;
 
     void Start()

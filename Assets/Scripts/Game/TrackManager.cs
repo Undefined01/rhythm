@@ -15,11 +15,11 @@ public class TrackManager : MonoBehaviour
 
     public Camera Camera;
     public List<GameObject> TrackObjects;
+    public List<Koreography> Koreographies;
 
     protected List<Track> Tracks;
     protected List<List<Note>> notes;
     protected Dictionary<int, NoteGroup> noteGroups;
-    protected Koreography koreography;
     protected SimpleMusicPlayer simplePlayer;
 
     public VerdictStatistics Statistics;
@@ -47,27 +47,26 @@ public class TrackManager : MonoBehaviour
                          var track = trackObject.GetComponent<Track>();
                          Assert.IsNotNull(track);
                          track.TrackId = idx + 1;
+                         track.HandleVerdict = HandleVerdict;
                          return track;
                      })
                      .ToList();
     }
 
-    public void StartLevel(int LevelID)
+    public void StartLevel(string level)
     {
         CleanUp();
 
         // Get rhythm track
-        koreography = Koreographer.Instance.GetKoreographyAtIndex(LevelID);
-        Assert.IsNotNull(koreography, $"Cannot find koreography {LevelID}");
-
+        var koreography = Koreographies.Single(k => k.name == level);
         Config.Set(koreography);
+        Debug.Log($"Start {level}");
 
         // Read noteInfos
         notes = Enumerable.Range(0, 4).Select(_ => new List<Note>()).ToList();
         noteGroups = new Dictionary<int, NoteGroup>();
 
-        Debug.Log(koreography.name);
-        var noteInfoAsset = (TextAsset)Resources.Load(koreography.name);
+        var noteInfoAsset = (TextAsset)Resources.Load(level);
         var noteInfoStr = System.Text.Encoding.ASCII.GetBytes(noteInfoAsset.text);
         using (var reader = new System.IO.MemoryStream(noteInfoStr))
         {
