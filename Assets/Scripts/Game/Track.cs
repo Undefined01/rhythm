@@ -32,7 +32,6 @@ public class Track : MonoBehaviour
     List<Note> Notes;
     Dictionary<int, NoteGroup> NoteGroups;
 
-    public Action<object, NoteVerdict> HandleVerdict;
     public Vector3 TrackEndPoint
     {
         get => noteLink.EndPoint;
@@ -64,12 +63,14 @@ public class Track : MonoBehaviour
         InstantiateEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
         Assert.IsNotNull(InstantiateEventTrack, $"Cannot create event track");
         InstantiateEventTrack.EventID = $"instantiateEventTrack-{TrackId}";
-        Assert.IsTrue(koreography.AddTrack(InstantiateEventTrack));
+        var res = koreography.AddTrack(InstantiateEventTrack);
+        Assert.IsTrue(res);
 
         MissEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
         Assert.IsNotNull(MissEventTrack, $"Cannot create event track");
         MissEventTrack.EventID = $"missEventTrack-{TrackId}";
-        Assert.IsTrue(koreography.AddTrack(MissEventTrack));
+        res = koreography.AddTrack(MissEventTrack);
+        Assert.IsTrue(res);
 
         Koreographer.Instance.RegisterForEvents(InstantiateEventTrack.EventID, InstanciateNote);
         Koreographer.Instance.RegisterForEvents(MissEventTrack.EventID, HandleNoteMiss);
@@ -158,17 +159,6 @@ public class Track : MonoBehaviour
             break;
         default:
             return;
-        }
-
-        if (note.Info.Group != 0)
-        {
-            var group = NoteGroups[note.Info.Group];
-            note.OnHasVerdict += group.UpdateVerdict;
-            group.OnHasVerdict += HandleVerdict;
-        }
-        else
-        {
-            note.OnHasVerdict += HandleVerdict;
         }
 
         noteLink.Add(note);

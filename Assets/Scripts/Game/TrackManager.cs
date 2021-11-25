@@ -47,7 +47,6 @@ public class TrackManager : MonoBehaviour
                          var track = trackObject.GetComponent<Track>();
                          Assert.IsNotNull(track);
                          track.TrackId = idx + 1;
-                         track.HandleVerdict = HandleVerdict;
                          return track;
                      })
                      .ToList();
@@ -84,8 +83,15 @@ public class TrackManager : MonoBehaviour
                 if (info.Group != 0)
                 {
                     if (!noteGroups.ContainsKey(info.Group))
+                    {
                         noteGroups[info.Group] = new NoteGroup();
+                        noteGroups[info.Group].OnHasVerdict += HandleVerdict;
+                    }
                     noteGroups[info.Group].Add(note);
+                }
+                else
+                {
+                    note.OnHasVerdict += HandleVerdict;
                 }
             }
         }
