@@ -30,5 +30,6 @@ public static class Config
     }
 
     public static int TimeToSample(TimeSpan time) => (int)(time.TotalSeconds * SampleRate);
+    public static int MsToSample(int ms) => (int)(ms * SampleRate / 1000);
     public static int SampleToMs(int sample) => sample * 1000 / SampleRate;
 }

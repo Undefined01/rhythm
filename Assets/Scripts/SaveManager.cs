@@ -20,11 +20,18 @@ public class LevelRecord
     public bool AllPerfect { get; set; }
 }
 
+public class StoryRecord
+{
+    public string Name { get; set; }
+    public bool Unlocked { get; set; }
+}
+
 public class Save
 {
     public int Version = 0;
     public Settings Settings { get; set; }
     public List<LevelRecord> Level { get; set; }
+    public List<StoryRecord> Story { get; set; }
 
     public static Save Default()
     {
@@ -51,9 +58,9 @@ public class SaveManager : MonoBehaviour
 
     void Awake()
     {
-        SavePath = Application.dataPath + "/Save/save0.xml";
-        if (!Directory.Exists(Application.dataPath + "/Save"))
-            Directory.CreateDirectory(Application.dataPath + "/Save");
+        SavePath = Application.persistentDataPath + "/Save/save0.xml";
+        if (!Directory.Exists(Application.persistentDataPath + "/Save"))
+            Directory.CreateDirectory(Application.persistentDataPath + "/Save");
         LoadAll();
     }
 
