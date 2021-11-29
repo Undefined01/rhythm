@@ -1,5 +1,5 @@
+using System;
 using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -13,18 +13,15 @@ public class UIManager : MonoBehaviour
         get => enteringUi || exitingUi;
     }
 
-    public List<GameObject> RootOfUi;
-    public List<IUIController> ControllerOfUi;
+    public List<UIController> Ui;
 
-    int currentUi;
+    UIController currentUi;
 
     void Awake()
     {
-        RootOfUi.ForEach(x => x.SetActive(false));
-        RootOfUi[0].SetActive(true);
-        ControllerOfUi = RootOfUi.Select(o => o.GetComponent<IUIController>()).ToList();
-
-        currentUi = 0;
+        Ui.ForEach(x => x.gameObject.SetActive(false));
+        currentUi = Ui[0];
+        currentUi.gameObject.SetActive(true);
     }
 
     public void SwitchToUi(string ui)
@@ -32,26 +29,16 @@ public class UIManager : MonoBehaviour
         if (switching)
             return;
 
-        Debug.Log("Switch to");
+        var uiSplit = ui.Split(';');
+        var uiName = uiSplit[0];
+        string uiParam = null;
+        if (uiSplit.Length >= 2)
+            uiParam = uiSplit[1];
+        Debug.Log($"Switch to {uiName} with {uiParam}");
 
-        int nextUi = RootOfUi.FindIndex(x => x.name == ui);
-        Assert.AreNotEqual(nextUi, -1);
-        if (ControllerOfUi[currentUi] != null)
-        {
-            ControllerOfUi[currentUi].OnExit(RootOfUi[nextUi]);
-        }
-        else
-        {
-            RootOfUi[currentUi].SetActive(false);
-            RootOfUi[nextUi].SetActive(true);
-            ControllerOfUi[nextUi]?.OnEnter(RootOfUi[currentUi]);
-        }
-        currentUi = nextUi;
+        var nextUi = Ui.Single(x => x.gameObject.name == uiName);
+        Assert.IsNotNull(nextUi);
+
+        currentUi.OnExit(nextUi, uiParam);
     }
-}
-
-public interface IUIController
-{
-    void OnEnter(GameObject prevUi);
-    void OnExit(GameObject nextUi);
 }

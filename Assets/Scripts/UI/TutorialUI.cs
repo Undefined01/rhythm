@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TutorialUI : MonoBehaviour, IUIController
+public class TutorialUI : UIController
 {
     public TrackManager TrackManager;
     public UIManager UIManager;
@@ -119,7 +119,7 @@ public class TutorialUI : MonoBehaviour, IUIController
         }
     }
 
-    public void OnEnter(GameObject prevUi)
+    public override void OnEnter(UIController prevUi, string param)
     {
         if (stages == null)
             InitStages();
@@ -127,14 +127,13 @@ public class TutorialUI : MonoBehaviour, IUIController
         TrackManager.OnHandleVerdict += HandleVerdict;
     }
 
-    public void OnExit(GameObject nextUi)
+    public override void OnExit(UIController nextUi, string nextParam)
     {
         Debug.Log("Exit");
         TrackManager.CleanUp();
         TrackManager.OnHandleVerdict -= HandleVerdict;
 
-        this.gameObject.SetActive(false);
-        nextUi.SetActive(true);
+        base.OnExit(nextUi, nextParam);
     }
 
     void StartStage(int stage, bool tryAgain)

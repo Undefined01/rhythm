@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<ArrayOfSentence xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Sentence>
+    <Speaker>玩家</Speaker>
+    <Texts>131</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>1</Texts>
+  </Sentence>
+</ArrayOfSentence>

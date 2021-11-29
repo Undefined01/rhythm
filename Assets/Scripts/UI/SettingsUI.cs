@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SettingsUI : MonoBehaviour
+public class SettingsUI : UIController
 {
     public Slider OffsetSlider;
     public Text OffsetText;
