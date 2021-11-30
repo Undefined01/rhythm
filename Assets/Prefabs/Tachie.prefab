@@ -91,9 +91,9 @@ MonoBehaviour:
   GrayMaterial: {fileID: 2100000, guid: 3942bc3df7e30694c834dc9ed288f260, type: 2}
   Tachies:
   - {fileID: 21300000, guid: 946b8973a3e125c428815120a11f9d7b, type: 3}
-  - {fileID: 21300000, guid: 53363c501a3d71b4d95213de2472cb2a, type: 3}
-  - {fileID: 21300000, guid: baf780a7329923b4296db72f737fee18, type: 3}
-  - {fileID: 21300000, guid: dc013d7222e4f0c49aa1178a0de82c81, type: 3}
-  - {fileID: 21300000, guid: 70da3d6d3b1eab64f9f439b0089c5a29, type: 3}
-  - {fileID: 21300000, guid: b6b4668181b6a854cae1367c3352fec5, type: 3}
-  - {fileID: 21300000, guid: 07ca3ac4d0ca0444cb2fbb0ed4ec4878, type: 3}
+  - {fileID: 21300000, guid: 96b446db030662f4597e818ee1203d6c, type: 3}
+  - {fileID: 21300000, guid: 35b4cc74584c8534eba15dabe909ad26, type: 3}
+  - {fileID: 21300000, guid: 7fce1faa7f9040d45960f213a7a687e2, type: 3}
+  - {fileID: 21300000, guid: c706d34417171004b9dec6b50eb6727a, type: 3}
+  - {fileID: 21300000, guid: 6af81fb645d6c7144b0293a31f5c1d12, type: 3}
+  - {fileID: 21300000, guid: c1460e87939839947bcbbd9858d9a1ec, type: 3}

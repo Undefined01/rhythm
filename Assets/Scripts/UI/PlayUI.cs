@@ -32,6 +32,7 @@ public class PlayUI : UIController
     public override void OnExit(UIController nextUi, string nextParam)
     {
         TrackManager.OnFinished -= ShowResult;
+        TrackManager.CleanUp();
         base.OnExit(nextUi, nextParam);
     }
 
