@@ -171,7 +171,7 @@ public class TutorialUI : UIController
     {
         if (TrackManager.Statistics.Count >= TrackManager.ExpectedHitsInTotal)
         {
-            if (TrackManager.Statistics.AllPerfect)
+            if (TrackManager.Statistics.FullCombo)
             {
                 StartStage(current + 1, false);
             }

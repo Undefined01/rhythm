@@ -8,6 +8,8 @@ public class NoteBehaviour : MonoBehaviour
 {
     public NoteInfo Info;
 
+    public GameObject HitEffect;
+
     void Start()
     {
         transform.position = Info.AppearedAtPos;
@@ -28,5 +30,7 @@ public class NoteBehaviour : MonoBehaviour
     public void SetVerdict(NoteVerdict verdict)
     {
         Destroy(this.gameObject);
+        if (HitEffect != null && verdict.Grade <= NoteGrade.Good)
+            GameObject.Instantiate(HitEffect, this.transform.position, Quaternion.identity);
     }
 }
