@@ -21,24 +21,39 @@ public class TrackManager : MonoBehaviour
     protected List<List<Note>> notes;
     protected Dictionary<int, NoteGroup> noteGroups;
     protected SimpleMusicPlayer simplePlayer;
+    protected KoreographyTrack finishedEventTrack;
 
     public int ExpectedHitsInTotal;
     public VerdictStatistics Statistics;
     public event Action<object, NoteVerdict> OnHandleVerdict;
 
+    public event Action OnFinished;
+
     public void CleanUp()
     {
         Tracks?.ForEach(x => x.CleanUp());
-        simplePlayer.Stop();
+        if (finishedEventTrack != null)
+        {
+            Config.Koreography.RemoveTrack(finishedEventTrack);
+            Koreographer.Instance?.UnregisterForAllEvents(this);
+            finishedEventTrack = null;
+        }
+        simplePlayer?.Stop();
 
         notes = null;
         noteGroups = null;
         Statistics = new VerdictStatistics();
     }
 
+    void OnDestroy()
+    {
+        CleanUp();
+    }
+
     void Awake()
     {
-        simplePlayer = GameObject.Find("Koreographer")?.GetComponent<SimpleMusicPlayer>();
+        var koreographer = GameObject.Find("Koreographer");
+        simplePlayer = koreographer.GetComponent<SimpleMusicPlayer>();
         Assert.IsNotNull(simplePlayer);
 
         Assert.IsTrue(TrackObjects.All(t => t != null));
@@ -73,6 +88,16 @@ public class TrackManager : MonoBehaviour
         // Get rhythm track
         var koreography = Koreographies.Single(k => k.name == level);
         Config.Set(koreography);
+
+        // Add FinishedEventTrack
+        finishedEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
+        finishedEventTrack.EventID = $"finishedEventTrack";
+        koreography.AddTrack(finishedEventTrack);
+        var finishedEvent = new KoreographyEvent();
+        finishedEvent.StartSample = koreography.SourceClip.samples - koreography.SampleRate / 4;
+        finishedEvent.EndSample = finishedEvent.StartSample;
+        finishedEventTrack.AddEvent(finishedEvent);
+        Koreographer.Instance.RegisterForEvents("finishedEventTrack", FinishedEventCallback);
 
         // Read noteInfos
         notes = Enumerable.Range(0, 4).Select(_ => new List<Note>()).ToList();
@@ -136,10 +161,12 @@ public class TrackManager : MonoBehaviour
         var dis = Tracks.Select(t => (Vector3.Distance(pos, Camera.main.WorldToScreenPoint(t.TrackEndPoint)), t))
                       .OrderBy(x => x.Item1);
         foreach (var (_, track) in dis)
+        {
             if (track.Click(isBegining))
             {
                 break;
             }
+        }
     }
 
     protected void HandleVerdict(object sender, NoteVerdict verdict)
@@ -147,5 +174,10 @@ public class TrackManager : MonoBehaviour
         Debug.Log($"Verdict #{verdict.Grade} {verdict.OffsetMs} ms");
         Statistics.Add(verdict);
         OnHandleVerdict?.Invoke(sender, verdict);
+    }
+
+    void FinishedEventCallback(KoreographyEvent evt)
+    {
+        OnFinished?.Invoke();
     }
 }

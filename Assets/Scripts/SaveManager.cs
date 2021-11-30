@@ -16,7 +16,7 @@ public class LevelRecord
     public string Name { get; set; }
     public bool Unlocked { get; set; }
     public int BestScore { get; set; }
-    public bool AllCombo { get; set; }
+    public bool FullCombo { get; set; }
     public bool AllPerfect { get; set; }
 }
 
@@ -42,7 +42,7 @@ public class Save
             Name = "chapter1_1_晴雪月夜",
             Unlocked = false,
             BestScore = 0,
-            AllCombo = false,
+            FullCombo = false,
             AllPerfect = false,
         });
 
