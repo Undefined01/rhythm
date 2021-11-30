@@ -14,7 +14,18 @@ public class Tachie : MonoBehaviour
 
     private Image TachieImage;
 
-    void Start()
+    private string _Tachie;
+    public string TachieName
+    {
+        get => _Tachie;
+        set {
+            var img = Tachies.Single(x => x.name == value);
+            _Tachie = value;
+            TachieImage.sprite = img;
+        }
+    }
+
+    void Awake()
     {
         TachieImage = this.GetComponent<Image>();
     }
@@ -27,8 +38,7 @@ public class Tachie : MonoBehaviour
             TachieImage.material = GrayMaterial;
     }
 
-    public void SetTachie(string image) {
-        var img = Tachies.Single(x => x.name == image);
-        TachieImage.sprite = img;
+    public void CleanUp() {
+        TachieName = "empty";
     }
 }

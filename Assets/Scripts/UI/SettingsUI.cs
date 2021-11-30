@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class SettingsUI : UIController
 {
+    public Slider NoteHitSoundEffectVolumnSlider;
     public Slider OffsetSlider;
     public Text OffsetText;
 
@@ -22,6 +23,9 @@ public class SettingsUI : UIController
             Offset += OffsetSlider.value * Mathf.Abs(OffsetSlider.value) * Time.deltaTime;
         OffsetText.text = $"{(int)Offset} ms";
 
+        if ((Offset > 100 || Offset < -100) && NoteHitSoundEffectVolumnSlider.value >= 3)
+            OffsetText.text += "\n偏移量过高，推荐关闭打击音效";
+
         if (Input.touches.Count() == 0 && !Input.GetMouseButton(0))
             OffsetSlider.value = 0;
     }
@@ -29,6 +33,7 @@ public class SettingsUI : UIController
     public void Save()
     {
         SaveManager.Save.Settings.HitOffsetMs = (int)Offset;
+        SaveManager.Save.Settings.HitSoundEffectVolumn = (int)NoteHitSoundEffectVolumnSlider.value;
         SaveManager.SaveAll();
     }
 }

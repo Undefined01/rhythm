@@ -8,4 +8,16 @@
     <Speaker>白黎</Speaker>
     <Texts>1</Texts>
   </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>2</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>3</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>玩家</Speaker>
+    <Texts>131</Texts>
+  </Sentence>
 </ArrayOfSentence>

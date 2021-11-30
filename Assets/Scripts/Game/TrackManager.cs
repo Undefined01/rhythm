@@ -56,10 +56,9 @@ public class TrackManager : MonoBehaviour
 
     public void StartLevel(string level)
     {
-        var noteInfoAsset = (TextAsset)Resources.Load(level);
-        var noteInfoStr = System.Text.Encoding.ASCII.GetBytes(noteInfoAsset.text);
+        var noteInfoAsset = (TextAsset)Resources.Load($"NoteChart/{level}");
         List<NoteInfo> noteInfos;
-        using (var reader = new System.IO.MemoryStream(noteInfoStr))
+        using (var reader = new System.IO.MemoryStream(noteInfoAsset.bytes))
         {
             XmlSerializer xz = new XmlSerializer(typeof(List<NoteInfo>));
             noteInfos = (List<NoteInfo>)xz.Deserialize(reader);

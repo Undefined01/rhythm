@@ -15,4 +15,9 @@ public class PlayUI : UIController
         ComboText.text = $"连击 {TrackManager.Statistics.CurrentCombo}";
         ScoreText.text = $"总分 {TrackManager.Statistics.Score:D6}";
     }
+
+    public override void OnEnter(UIController prevUi, string param)
+    {
+        TrackManager.StartLevel(param);
+    }
 }

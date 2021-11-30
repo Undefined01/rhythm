@@ -9,7 +9,8 @@ public class StoryUI : UIController
 {
     public UIManager UIManager;
     public Tachie Tachie1, Tachie2;
-    public Text Text;
+    public Text SpeakerText;
+    public TextTyper ContentText;
 
     int current = 0;
 
@@ -27,33 +28,46 @@ public class StoryUI : UIController
     {
         Debug.Log($"Loading story {param}");
         var StoryAsset = (TextAsset)Resources.Load($"Stories/{param}");
-        var StoryStr = System.Text.Encoding.UTF8.GetBytes(StoryAsset.text);
-        using (var reader = new System.IO.MemoryStream(StoryStr))
+        using (var reader = new System.IO.MemoryStream(StoryAsset.bytes))
         {
             var xz = new XmlSerializer(typeof(List<Sentence>));
             sentences = (List<Sentence>)xz.Deserialize(reader);
         }
         current = 0;
+        Tachie1.CleanUp();
+        Tachie2.CleanUp();
         Step();
     }
 
     void Step()
     {
-        if (current >= sentences.Count) {
+        if (current >= sentences.Count)
+        {
             UIManager.SwitchToUi("Main");
             return;
         }
 
         var sentence = sentences[current];
+        if (sentence.Speaker == "旁白")
+        {
+            Tachie1.SetIsSpeaking(false);
+            SpeakerText.text = "";
+            ContentText.TypeText(sentence.Texts, 0.1f);
+            return;
+        }
 
-        Tachie1.SetIsSpeaking(false);
-        Tachie2.SetIsSpeaking(true);
-        Tachie2.SetTachie(sentence.Speaker);
-        var tmp = Tachie1;
-        Tachie1 = Tachie2;
-        Tachie2 = tmp;
+        if (Tachie1.TachieName != sentence.Speaker)
+        {
+            var tmp = Tachie1;
+            Tachie1 = Tachie2;
+            Tachie2 = tmp;
+        }
+        Tachie1.SetIsSpeaking(true);
+        Tachie1.TachieName = sentence.Speaker;
+        Tachie2.SetIsSpeaking(false);
 
-        Text.text = sentence.Speaker + "\n" + sentence.Texts;
+        SpeakerText.text = sentence.Speaker;
+        ContentText.TypeText(sentence.Texts, 0.1f);
         current++;
     }
 

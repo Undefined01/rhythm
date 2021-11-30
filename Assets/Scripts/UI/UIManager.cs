@@ -14,6 +14,9 @@ public class UIManager : MonoBehaviour
     }
 
     public List<UIController> Ui;
+    public AudioSource UiSoundEffect;
+
+    public List<AudioClip> SoundEffects;
 
     UIController currentUi;
 
@@ -40,5 +43,12 @@ public class UIManager : MonoBehaviour
         Assert.IsNotNull(nextUi);
 
         currentUi.OnExit(nextUi, uiParam);
+        currentUi = nextUi;
+    }
+
+    public void PlayUiSoundEffect()
+    {
+        // UiSoundEffect.volume = (float)SaveManager.Save.Settings.U
+        UiSoundEffect.Play();
     }
 }
