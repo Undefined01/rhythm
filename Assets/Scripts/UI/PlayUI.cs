@@ -71,5 +71,7 @@ public class PlayUI : UIController
         }
         level.FullCombo |= statistics.FullCombo;
         level.AllPerfect |= statistics.AllPerfect;
+
+        SaveManager.SaveAll();
     }
 }

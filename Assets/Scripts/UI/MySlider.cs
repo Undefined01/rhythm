@@ -24,7 +24,8 @@ public class MySlider : MonoBehaviour, IDragHandler, IEndDragHandler
         get => _value;
         set {
             _value = value;
-            Target.localPosition = new Vector3((Value - MinValue) / (MaxValue - MinValue) * width, 0, 0);
+            Debug.Log($"Slider set to {_value}");
+            Target.localPosition = new Vector3((_value - MinValue) / (MaxValue - MinValue) * width, 0, 0);
         }
     }
 
@@ -32,7 +33,7 @@ public class MySlider : MonoBehaviour, IDragHandler, IEndDragHandler
 
     private float width;
 
-    void Start()
+    void Awake()
     {
         width = (transform as RectTransform).rect.width;
     }

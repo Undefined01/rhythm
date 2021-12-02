@@ -16,15 +16,18 @@ public class SettingsUI : UIController
 
     void Start()
     {
-        NoteHitSoundEffectVolumnSlider.Value = SaveManager.Save.Settings.HitSoundEffectVolumn;
-        NoteHitSoundEffectVolumnSlider.OnValueChanged += v => SaveManager.Save.Settings.HitSoundEffectVolumn = v;
         BackgroundLightnessSlider.Value = SaveManager.Save.Settings.BackgroundLightness;
         BackgroundLightnessSlider.OnValueChanged += v => SaveManager.Save.Settings.BackgroundLightness = v;
+        Debug.Log(SaveManager.Save.Settings.BackgroundLightness);
+        NoteHitSoundEffectVolumnSlider.Value = SaveManager.Save.Settings.HitSoundEffectVolumn;
+        NoteHitSoundEffectVolumnSlider.OnValueChanged += v => SaveManager.Save.Settings.HitSoundEffectVolumn = v;
         MusicVolumnSlider.Value = SaveManager.Save.Settings.MusicVolumn;
         MusicVolumnSlider.OnValueChanged += v => SaveManager.Save.Settings.MusicVolumn = v;
 
         Offset = SaveManager.Save.Settings.HitOffsetMs;
-        MusicVolumnSlider.OnValueChanged += _ => SaveManager.Save.Settings.MusicVolumn = (int)Offset;
+
+        OffsetSlider.Value = 0;
+        OffsetSlider.OnValueChanged += _ => SaveManager.Save.Settings.HitOffsetMs = (int)Offset;
     }
 
     public override void OnExit(UIController next, string nextParam)

@@ -143,10 +143,12 @@ public class TrackManager : MonoBehaviour
 
     void Update()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
         foreach (var touch in Input.touches)
         {
             HandleTouch(touch.position, touch.phase == TouchPhase.Began);
         }
+#else
         if (Input.GetMouseButtonDown(0))
         {
             HandleTouch(Input.mousePosition, true);
@@ -155,18 +157,19 @@ public class TrackManager : MonoBehaviour
         {
             HandleTouch(Input.mousePosition, false);
         }
+#endif
     }
 
     void HandleTouch(Vector3 pos, bool isBegining)
     {
         var dis = Tracks.Select(t => (Vector3.Distance(pos, Camera.main.WorldToScreenPoint(t.TrackEndPoint)), t))
                       .OrderBy(x => x.Item1);
-        foreach (var (_, track) in dis)
+        foreach (var (d, track) in dis)
         {
-            if (track.Click(isBegining))
-            {
+            if (d > Camera.pixelHeight / 5)
                 break;
-            }
+            if (track.Click(isBegining))
+                break;
         }
     }
 

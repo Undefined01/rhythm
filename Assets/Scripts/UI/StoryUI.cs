@@ -12,6 +12,7 @@ public class StoryUI : UIController
     public Text SpeakerText;
     public TextTyper ContentText;
 
+    int chapter;
     int current = 0;
 
     List<Sentence> sentences;
@@ -27,6 +28,7 @@ public class StoryUI : UIController
     public override void OnEnter(UIController prevUi, string param)
     {
         Debug.Log($"Loading story {param}");
+        chapter = int.Parse(param);
         var StoryAsset = (TextAsset)Resources.Load($"Stories/{param}");
         using (var reader = new System.IO.MemoryStream(StoryAsset.bytes))
         {
@@ -43,7 +45,15 @@ public class StoryUI : UIController
     {
         if (current >= sentences.Count)
         {
-            UIManager.SwitchToUi("Main");
+            var story = SaveManager.Save.Story.Single(x => x.Chapter == chapter);
+            var watchedBefore = story.Watched;
+            story.Watched = true;
+            SaveManager.SaveAll();
+
+            if (chapter == 0 && !watchedBefore)
+                UIManager.SwitchToUi("Tutorial");
+            else
+                UIManager.SwitchToUi("Main");
             return;
         }
 

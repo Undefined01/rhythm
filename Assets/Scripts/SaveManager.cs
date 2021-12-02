@@ -18,16 +18,16 @@ public class LevelRecord
     public string Author { get; set; }
     public int Chapter { get; set; }
     public int Id { get; set; }
-    public bool Unlocked { get; set; }
     public int BestScore { get; set; }
     public bool FullCombo { get; set; }
     public bool AllPerfect { get; set; }
 }
 
+
 public class StoryRecord
 {
-    public string Name { get; set; }
-    public bool Unlocked { get; set; }
+    public int Chapter { get; set; }
+    public bool Watched { get; set; }
 }
 
 public class Save
@@ -41,13 +41,13 @@ public class Save
     {
         var save = new Save();
         save.Settings = new Settings();
+
         save.Level = new List<LevelRecord>();
         save.Level.Add(new LevelRecord {
             Name = "筝鸣",
             Author = "RADI8, JuggShots, Reggie Yang",
             Chapter = 1,
             Id = 1,
-            Unlocked = false,
             BestScore = 0,
             FullCombo = false,
             AllPerfect = false,
@@ -57,7 +57,6 @@ public class Save
             Author = "ELE.K",
             Chapter = 1,
             Id = 2,
-            Unlocked = false,
             BestScore = 0,
             FullCombo = false,
             AllPerfect = false,
@@ -67,7 +66,6 @@ public class Save
             Author = "带电的笛子Bana-X",
             Chapter = 2,
             Id = 3,
-            Unlocked = false,
             BestScore = 0,
             FullCombo = false,
             AllPerfect = false,
@@ -77,10 +75,23 @@ public class Save
             Author = "Newton-, 萌珑",
             Chapter = 3,
             Id = 4,
-            Unlocked = false,
             BestScore = 0,
             FullCombo = false,
             AllPerfect = false,
+        });
+
+        save.Story = new List<StoryRecord>();
+        save.Story.Add(new StoryRecord {
+            Chapter = 0,
+            Watched = false,
+        });
+        save.Story.Add(new StoryRecord {
+            Chapter = 1,
+            Watched = false,
+        });
+        save.Story.Add(new StoryRecord {
+            Chapter = 2,
+            Watched = false,
         });
 
         return save;
@@ -133,6 +144,7 @@ public class SaveManager : MonoBehaviour
         {
             Save = Save.Default();
             SaveAll();
+            Debug.Log(Save);
             return;
         }
         using (var reader = new StreamReader(SavePath))
@@ -140,5 +152,6 @@ public class SaveManager : MonoBehaviour
             var xz = new XmlSerializer(typeof(Save));
             Save = (Save)xz.Deserialize(reader);
         }
+            Debug.Log(Save);
     }
 }
