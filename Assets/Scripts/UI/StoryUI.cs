@@ -52,7 +52,8 @@ public class StoryUI : UIController
         {
             Tachie1.SetIsSpeaking(false);
             SpeakerText.text = "";
-            ContentText.TypeText(sentence.Texts, 0.1f);
+            ContentText.TypeText(sentence.Texts, 0.05f);
+            current++;
             return;
         }
 
@@ -67,7 +68,7 @@ public class StoryUI : UIController
         Tachie2.SetIsSpeaking(false);
 
         SpeakerText.text = sentence.Speaker;
-        ContentText.TypeText(sentence.Texts, 0.1f);
+        ContentText.TypeText(sentence.Texts, 0.05f);
         current++;
     }
 

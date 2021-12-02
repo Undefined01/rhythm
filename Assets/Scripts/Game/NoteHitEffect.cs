@@ -8,7 +8,7 @@ public class NoteHitEffect : MonoBehaviour
 
     void Start() {
         var audio = this.GetComponent<AudioSource>();
-        audio.volume = (float)SaveManager.Save.Settings.HitSoundEffectVolumn / 100f;
+        audio.volume = SaveManager.Save.Settings.HitSoundEffectVolumn;
     }
 
     void FixedUpdate()

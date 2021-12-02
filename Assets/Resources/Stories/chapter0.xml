@@ -1,23 +1,82 @@
 <?xml version="1.0"?>
 <ArrayOfSentence xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Sentence>
-    <Speaker>玩家</Speaker>
-    <Texts>131</Texts>
+    <Speaker>旁白</Speaker>
+    <Texts>古音隐于“人”，乱玉碎琼、风动裙裾、金石交响，龙鸣马嘶……冥界有乐官，游荡于人世，集世间回响。
+他们会跟随人的一生，将人魂深处的执念凝成音调。
+一世揉一弦，一弦清一心，古曲谱成，万鬼闻之泣下……</Texts>
   </Sentence>
   <Sentence>
     <Speaker>白黎</Speaker>
-    <Texts>1</Texts>
-  </Sentence>
-  <Sentence>
-    <Speaker>白黎</Speaker>
-    <Texts>2</Texts>
-  </Sentence>
-  <Sentence>
-    <Speaker>白黎</Speaker>
-    <Texts>3</Texts>
+    <Texts>主人，主人，快醒醒</Texts>
   </Sentence>
   <Sentence>
     <Speaker>玩家</Speaker>
-    <Texts>131</Texts>
+    <Texts>！</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>玩家</Speaker>
+    <Texts>你是谁？
+这里是哪里？</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>喵呜～吾乃地府之使徒白黎，
+喵呜～此乃地府。</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>幸运的人哟，欢迎你来……？</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>唉？怎么只是个普通人，现在地府这么缺人了吗？</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>玩家</Speaker>
+    <Texts>（好恶劣。）
+（感觉完全被蔑视了！）</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>算了，便宜你了，这里是地府，签下这份鬼使契约，你将获得无穷的寿命，地府会避护你的灵魂不被时间之水净去记忆。</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>怎么样心不心动？</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>玩家</Speaker>
+    <Texts>（要签下吗……）</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>玩家</Speaker>
+    <Texts>我可以不签吗？我只想要快乐。</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>喵呜！！</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>年轻人有点志气好不好？
+罢了，人各有志想回归原来生活，也是不是不可能！
+你需要做的就是演义亡者生前记忆碎片，收集隐于其中的古音，帮助我们谱曲，超度忘川的亡魂。</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>白黎</Speaker>
+    <Texts>当你的鬼使工作达到一定的熟练经验后，也有机会去往其他世界的地府工作，所以说，你的愿望也不是不可能。考虑一下？</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>玩家</Speaker>
+    <Texts>听上去有点意思。鬼神之事我倒也想见识一下。</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>玩家</Speaker>
+    <Texts>那就没什么好考虑的了，我签。</Texts>
+  </Sentence>
+  <Sentence>
+    <Speaker>旁白</Speaker>
+    <Texts>好啦，业务紧迫，白黎大人带你来熟悉一下鬼使工作中的演义流程吧。</Texts>
   </Sentence>
 </ArrayOfSentence>

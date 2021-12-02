@@ -137,6 +137,7 @@ public class TrackManager : MonoBehaviour
         }
 
         Debug.Log($"Start {level}");
+        simplePlayer.gameObject.GetComponent<AudioSource>().volume = SaveManager.Save.Settings.MusicVolumn;
         simplePlayer.LoadSong(koreography, StartAtSample);
     }
 

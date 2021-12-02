@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -16,15 +17,26 @@ public class MySlider : MonoBehaviour, IDragHandler, IEndDragHandler
     [SerializeField]
     private bool ResetPositionAfterRelease = false;
 
-    public float Value;
+    [SerializeField]
+    private float _value;
+    public float Value
+    {
+        get => _value;
+        set {
+            _value = value;
+            Target.localPosition = new Vector3((Value - MinValue) / (MaxValue - MinValue) * width, 0, 0);
+        }
+    }
+
+    public event Action<float> OnValueChanged;
+
+    private float width;
 
     void Start()
     {
+        width = (transform as RectTransform).rect.width;
     }
 
-    /// <summary>
-    /// 当操纵杆被拖动时触发
-    /// </summary>
     public void OnDrag(PointerEventData data)
     {
         //获取摇杆的RectTransform组件，以检测操纵杆是否在摇杆内移动
@@ -41,23 +53,15 @@ public class MySlider : MonoBehaviour, IDragHandler, IEndDragHandler
 
         float posX = Target.localPosition.x;
 
-        if (posX > draggingPlane.sizeDelta.x)
-            posX = draggingPlane.sizeDelta.x;
-        else if (posX < 0)
-            posX = 0;
+        posX = Mathf.Clamp(posX, 0, width);
         Target.localPosition = new Vector3(posX, 0, 0);
-        Value = Mathf.Lerp(MinValue, MaxValue, posX / draggingPlane.sizeDelta.x);
+        _value = Mathf.Lerp(MinValue, MaxValue, posX / width);
     }
 
-    /// <summary>
-    /// 当操纵杆结束拖动时触发
-    /// </summary>
     public void OnEndDrag(PointerEventData data)
     {
+        OnValueChanged?.Invoke(Value);
         if (ResetPositionAfterRelease)
-        {
             Value = 0;
-            Target.position = transform.position;
-        }
     }
 }

@@ -6,8 +6,9 @@ using UnityEngine;
 
 public class Settings
 {
-    public int BackgroundLightness { get; set; } = 100;
-    public int HitSoundEffectVolumn { get; set; } = 100;
+    public float BackgroundLightness { get; set; } = 1;
+    public float HitSoundEffectVolumn { get; set; } = 1;
+    public float MusicVolumn { get; set; } = 1;
     public int HitOffsetMs { get; set; } = 0;
 }
 

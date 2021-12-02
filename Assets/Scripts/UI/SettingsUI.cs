@@ -6,34 +6,40 @@ using UnityEngine.UI;
 
 public class SettingsUI : UIController
 {
-    public Slider NoteHitSoundEffectVolumnSlider;
-    public Slider OffsetSlider;
+    public MySlider BackgroundLightnessSlider;
+    public MySlider NoteHitSoundEffectVolumnSlider;
+    public MySlider MusicVolumnSlider;
+    public MySlider OffsetSlider;
     public Text OffsetText;
 
-    double Offset;
+    float Offset;
 
     void Start()
     {
+        NoteHitSoundEffectVolumnSlider.Value = SaveManager.Save.Settings.HitSoundEffectVolumn;
+        NoteHitSoundEffectVolumnSlider.OnValueChanged += v => SaveManager.Save.Settings.HitSoundEffectVolumn = v;
+        BackgroundLightnessSlider.Value = SaveManager.Save.Settings.BackgroundLightness;
+        BackgroundLightnessSlider.OnValueChanged += v => SaveManager.Save.Settings.BackgroundLightness = v;
+        MusicVolumnSlider.Value = SaveManager.Save.Settings.MusicVolumn;
+        MusicVolumnSlider.OnValueChanged += v => SaveManager.Save.Settings.MusicVolumn = v;
+
         Offset = SaveManager.Save.Settings.HitOffsetMs;
+        MusicVolumnSlider.OnValueChanged += _ => SaveManager.Save.Settings.MusicVolumn = (int)Offset;
     }
 
-    void Update()
+    public override void OnExit(UIController next, string nextParam)
+    {
+        SaveManager.SaveAll();
+        base.OnExit(next, nextParam);
+    }
+
+    void LateUpdate()
     {
         if (-300 <= Offset && Offset <= 300)
-            Offset += OffsetSlider.value * Mathf.Abs(OffsetSlider.value) * Time.deltaTime;
+            Offset += OffsetSlider.Value * Mathf.Abs(OffsetSlider.Value) * Time.deltaTime;
         OffsetText.text = $"{(int)Offset} ms";
 
-        if ((Offset > 100 || Offset < -100) && NoteHitSoundEffectVolumnSlider.value >= 3)
+        if ((Offset > 100 || Offset < -100) && NoteHitSoundEffectVolumnSlider.Value >= .03f)
             OffsetText.text += "\n偏移量过高，推荐关闭打击音效";
-
-        if (Input.touches.Count() == 0 && !Input.GetMouseButton(0))
-            OffsetSlider.value = 0;
-    }
-
-    public void Save()
-    {
-        SaveManager.Save.Settings.HitOffsetMs = (int)Offset;
-        SaveManager.Save.Settings.HitSoundEffectVolumn = (int)NoteHitSoundEffectVolumnSlider.value;
-        SaveManager.SaveAll();
     }
 }

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -2076007791, guid: aa81bbec85a3f423193272a7c6154986, type: 3}
-  m_Name: "chapter1_1_\u6674\u96EA\u6708\u591C"
+  m_Name: "\u6674\u96EA\u6708\u591C"
   m_EditorClassIdentifier: 
   mSourceClip: {fileID: 8300000, guid: fd8ffbd8e4cb1944488641b24b53773c, type: 3}
   mAudioFilePath: 
