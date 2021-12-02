@@ -15,6 +15,9 @@ public class Settings
 public class LevelRecord
 {
     public string Name { get; set; }
+    public string Author { get; set; }
+    public int Chapter { get; set; }
+    public int Id { get; set; }
     public bool Unlocked { get; set; }
     public int BestScore { get; set; }
     public bool FullCombo { get; set; }
@@ -40,7 +43,40 @@ public class Save
         save.Settings = new Settings();
         save.Level = new List<LevelRecord>();
         save.Level.Add(new LevelRecord {
-            Name = "chapter1_1_晴雪月夜",
+            Name = "筝鸣",
+            Author = "RADI8, JuggShots, Reggie Yang",
+            Chapter = 1,
+            Id = 1,
+            Unlocked = false,
+            BestScore = 0,
+            FullCombo = false,
+            AllPerfect = false,
+        });
+        save.Level.Add(new LevelRecord {
+            Name = "晴雪月夜",
+            Author = "ELE.K",
+            Chapter = 1,
+            Id = 2,
+            Unlocked = false,
+            BestScore = 0,
+            FullCombo = false,
+            AllPerfect = false,
+        });
+        save.Level.Add(new LevelRecord {
+            Name = "舞步生风",
+            Author = "带电的笛子Bana-X",
+            Chapter = 2,
+            Id = 3,
+            Unlocked = false,
+            BestScore = 0,
+            FullCombo = false,
+            AllPerfect = false,
+        });
+        save.Level.Add(new LevelRecord {
+            Name = "别君赋",
+            Author = "Newton-, 萌珑",
+            Chapter = 3,
+            Id = 4,
             Unlocked = false,
             BestScore = 0,
             FullCombo = false,

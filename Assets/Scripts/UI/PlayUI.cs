@@ -9,6 +9,8 @@ public class PlayUI : UIController
     public Text ScoreText;
 
     public GameObject Result;
+    public Text ResMusicNameText;
+    public Text ResMusicAuthorText;
     public Text ResComboText;
     public Text ResScoreText;
     public Text ResRatingText;
@@ -43,6 +45,7 @@ public class PlayUI : UIController
     public void ShowResult()
     {
         var statistics = TrackManager.Statistics;
+        var level = SaveManager.Save.Level.Single(level => level.Name == levelName);
 
         var rating = statistics.Score switch {
             var x when x >= 1000_000 => "曲高和寡",
@@ -58,8 +61,9 @@ public class PlayUI : UIController
         ResComboText.text = statistics.MaxCombo.ToString();
         ResScoreText.text = $"{statistics.Score:D6}";
         ResRatingText.text = rating;
+        ResMusicNameText.text = level.Name;
+        ResMusicAuthorText.text = level.Author;
 
-        var level = SaveManager.Save.Level.Single(level => level.Name == levelName);
         if (statistics.Score > level.BestScore)
         {
             level.BestScore = statistics.Score;
