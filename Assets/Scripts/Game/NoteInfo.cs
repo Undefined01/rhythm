@@ -50,7 +50,7 @@ public class NoteInfo
     /// </summary>
     public int Group;
     /// <summary>
-    /// <c>Note</c> 出现时所在的位置，默认为 (0, 0, 10)
+    /// <c>Note</c> 出现时所在的位置，已弃用。由 Config.NoteStartPos 指定
     /// </summary>
     public Vector3 AppearedAtPos;
     /// <summary>
@@ -66,8 +66,11 @@ public class NoteInfo
     /// </summary>
     public int ShouldHitAtSample;
 
-    public NoteInfo() {}
-    public NoteInfo(NoteInfo info) {
+    public NoteInfo()
+    {
+    }
+    public NoteInfo(NoteInfo info)
+    {
         this.Track = info.Track;
         this.NoteType = info.NoteType;
         this.NoteStyle = info.NoteStyle;
@@ -86,7 +89,6 @@ public class NoteInfo
         var duration = ShouldHitAtSample - AppearedAtSample;
         var deltaTime = sampleTime - AppearedAtSample;
         var t = (float)deltaTime / duration;
-        var deltaPos = ShouldHitAtPos - AppearedAtPos;
-        return AppearedAtPos + deltaPos * t;
+        return Vector3.LerpUnclamped(Config.NoteStartPos, ShouldHitAtPos, t);
     }
 }

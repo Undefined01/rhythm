@@ -12,7 +12,7 @@ public class NoteBehaviour : MonoBehaviour
 
     void Start()
     {
-        transform.position = Info.AppearedAtPos;
+        transform.position = Config.NoteStartPos;
     }
 
     void FixedUpdate()

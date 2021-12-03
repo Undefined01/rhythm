@@ -37,7 +37,7 @@ public class TutorialUI : UIController
                 Group = 0,
                 AppearedAtSample = MsToSample(delayMs + 500),
                 ShouldHitAtSample = MsToSample(delayMs + 2500),
-                AppearedAtPos = new Vector3(0, 0, 10),
+                AppearedAtPos = Config.NoteStartPos,
                 ShouldHitAtPos = new Vector3(0, 0, 0),
             };
         }
@@ -121,6 +121,8 @@ public class TutorialUI : UIController
 
     public override void OnEnter(UIController prevUi, string param)
     {
+        base.OnEnter(prevUi, param);
+
         if (stages == null)
             InitStages();
         StartStage(0, false);

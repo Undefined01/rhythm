@@ -22,6 +22,7 @@ public class PlayUI : UIController
 
     public override void OnEnter(UIController prevUi, string param)
     {
+        base.OnEnter(prevUi, param);
         levelName = param;
         TrackManager.StartLevel(levelName);
         TrackManager.OnFinished += ShowResult;
@@ -56,6 +57,7 @@ public class PlayUI : UIController
             var x when x >= 300_000 => "差强人意",
             _ => "勇往直前",
         };
+        rating = $"{rating[0]}    \n{rating[1]}{rating[2]}\n    {rating[3]}";
 
         Result.SetActive(true);
         ResComboText.text = statistics.MaxCombo.ToString();

@@ -6,7 +6,7 @@ using SonicBloom.Koreo;
 
 public class NoteLink : MonoBehaviour
 {
-    static readonly Vector3 TrackStartPos = new Vector3(0, 0, 10);
+    static readonly Vector3 TrackStartPos = Config.NoteStartPos;
 
     List<Note> notes = new List<Note>();
     LineRenderer line;

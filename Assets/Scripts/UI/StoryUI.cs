@@ -27,6 +27,8 @@ public class StoryUI : UIController
 
     public override void OnEnter(UIController prevUi, string param)
     {
+        base.OnEnter(prevUi, param);
+
         Debug.Log($"Loading story {param}");
         chapter = int.Parse(param);
         var StoryAsset = (TextAsset)Resources.Load($"Stories/{param}");

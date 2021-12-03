@@ -23,7 +23,6 @@ public class LevelRecord
     public bool AllPerfect { get; set; }
 }
 
-
 public class StoryRecord
 {
     public int Chapter { get; set; }
@@ -33,6 +32,7 @@ public class StoryRecord
 public class Save
 {
     public int Version = 0;
+    public static int CurrentVersion = 1;
     public Settings Settings { get; set; }
     public List<LevelRecord> Level { get; set; }
     public List<StoryRecord> Story { get; set; }
@@ -41,6 +41,7 @@ public class Save
     {
         var save = new Save();
         save.Settings = new Settings();
+        save.Version = CurrentVersion;
 
         save.Level = new List<LevelRecord>();
         save.Level.Add(new LevelRecord {
@@ -140,18 +141,18 @@ public class SaveManager : MonoBehaviour
 
     public static void LoadAll()
     {
-        if (!File.Exists(SavePath))
+        if (File.Exists(SavePath))
+        {
+            using (var reader = new StreamReader(SavePath))
+            {
+                var xz = new XmlSerializer(typeof(Save));
+                Save = (Save)xz.Deserialize(reader);
+            }
+        }
+        if (Save.Version < Save.CurrentVersion)
         {
             Save = Save.Default();
             SaveAll();
-            Debug.Log(Save);
-            return;
         }
-        using (var reader = new StreamReader(SavePath))
-        {
-            var xz = new XmlSerializer(typeof(Save));
-            Save = (Save)xz.Deserialize(reader);
-        }
-            Debug.Log(Save);
     }
 }

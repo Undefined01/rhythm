@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Assertions;
 
 public class UIManager : MonoBehaviour
@@ -16,12 +17,16 @@ public class UIManager : MonoBehaviour
     public List<UIController> Ui;
     public AudioSource UiSoundEffect;
 
-    public List<AudioClip> SoundEffects;
+    public Image BackgroundImage;
 
     UIController currentUi;
 
+    public static UIManager Instance { get; protected set; }
+
     void Awake()
     {
+        Assert.IsNull(Instance);
+        Instance = this;
         Ui.ForEach(x => x.gameObject.SetActive(false));
         currentUi = Ui[0];
         currentUi.gameObject.SetActive(true);
@@ -48,7 +53,12 @@ public class UIManager : MonoBehaviour
 
     public void PlayUiSoundEffect()
     {
-        // UiSoundEffect.volume = (float)SaveManager.Save.Settings.U
+        UiSoundEffect.volume = (float)SaveManager.Save.Settings.MusicVolumn;
         UiSoundEffect.Play();
+    }
+
+    public void ChangeBackgroundImage(Sprite image)
+    {
+        BackgroundImage.sprite = image;
     }
 }
