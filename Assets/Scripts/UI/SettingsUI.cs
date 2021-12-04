@@ -16,9 +16,10 @@ public class SettingsUI : UIController
 
     void Start()
     {
-        BackgroundLightnessSlider.Value = SaveManager.Save.Settings.BackgroundLightness;
-        BackgroundLightnessSlider.OnValueChanged += v => SaveManager.Save.Settings.BackgroundLightness = v;
-        Debug.Log(SaveManager.Save.Settings.BackgroundLightness);
+        BackgroundLightnessSlider.Value = SaveManager.Save.Settings.BackgroundBrightness;
+        BackgroundLightnessSlider.OnChanging += v => UIManager.Instance.BackgroundImage.color = new Color(v, v, v);
+        BackgroundLightnessSlider.OnValueChanged += v => SaveManager.Save.Settings.BackgroundBrightness = v;
+
         NoteHitSoundEffectVolumnSlider.Value = SaveManager.Save.Settings.HitSoundEffectVolumn;
         NoteHitSoundEffectVolumnSlider.OnValueChanged += v => SaveManager.Save.Settings.HitSoundEffectVolumn = v;
         MusicVolumnSlider.Value = SaveManager.Save.Settings.MusicVolumn;

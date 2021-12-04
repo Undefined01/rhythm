@@ -12,6 +12,8 @@ public class StoryUI : UIController
     public Text SpeakerText;
     public TextTyper ContentText;
 
+    public List<Sprite> Backgrounds;
+
     int chapter;
     int current = 0;
 
@@ -60,6 +62,10 @@ public class StoryUI : UIController
         }
 
         var sentence = sentences[current];
+        if (sentence.Background != null)
+        {
+            UIManager.ChangeBackgroundImage(Backgrounds.Single(x => x.name == sentence.Background));
+        }
         if (sentence.Speaker == "旁白")
         {
             Tachie1.SetIsSpeaking(false);
@@ -88,5 +94,6 @@ public class StoryUI : UIController
     {
         public string Speaker;
         public string Texts;
+        public string Background;
     }
 }

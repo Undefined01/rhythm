@@ -28,12 +28,14 @@ public class PlayUI : UIController
         TrackManager.OnFinished += ShowResult;
         Result.SetActive(false);
         BestScore.SetActive(false);
+        UIManager.Instance.SetBackgroundMask(true);
     }
 
     public override void OnExit(UIController nextUi, string nextParam)
     {
         TrackManager.OnFinished -= ShowResult;
         TrackManager.CleanUp();
+        UIManager.Instance.SetBackgroundMask(false);
         base.OnExit(nextUi, nextParam);
     }
 

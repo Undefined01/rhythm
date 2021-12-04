@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Settings
 {
-    public float BackgroundLightness { get; set; } = 1;
+    public float BackgroundBrightness { get; set; } = 1;
     public float HitSoundEffectVolumn { get; set; } = 1;
     public float MusicVolumn { get; set; } = 1;
     public int HitOffsetMs { get; set; } = 0;
@@ -149,7 +149,7 @@ public class SaveManager : MonoBehaviour
                 Save = (Save)xz.Deserialize(reader);
             }
         }
-        if (Save.Version < Save.CurrentVersion)
+        if ((Save?.Version ?? 0) < Save.CurrentVersion)
         {
             Save = Save.Default();
             SaveAll();

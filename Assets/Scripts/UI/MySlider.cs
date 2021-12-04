@@ -29,6 +29,7 @@ public class MySlider : MonoBehaviour, IDragHandler, IEndDragHandler
         }
     }
 
+    public event Action<float> OnChanging;
     public event Action<float> OnValueChanged;
 
     private float width;
@@ -57,6 +58,7 @@ public class MySlider : MonoBehaviour, IDragHandler, IEndDragHandler
         posX = Mathf.Clamp(posX, 0, width);
         Target.localPosition = new Vector3(posX, 0, 0);
         _value = Mathf.Lerp(MinValue, MaxValue, posX / width);
+        OnChanging?.Invoke(_value);
     }
 
     public void OnEndDrag(PointerEventData data)

@@ -19,9 +19,9 @@ public class Tachie : MonoBehaviour
     {
         get => _Tachie;
         set {
-            var img = Tachies.Single(x => x.name == value);
+            var img = Tachies.SingleOrDefault(x => x.name == value);
             _Tachie = value;
-            TachieImage.sprite = img;
+            TachieImage.sprite = img ?? Tachies[0];
         }
     }
 

@@ -127,6 +127,7 @@ public class TutorialUI : UIController
             InitStages();
         StartStage(0, false);
         TrackManager.OnHandleVerdict += HandleVerdict;
+        UIManager.Instance.SetBackgroundMask(true);
     }
 
     public override void OnExit(UIController nextUi, string nextParam)
@@ -134,6 +135,7 @@ public class TutorialUI : UIController
         Debug.Log("Exit");
         TrackManager.CleanUp();
         TrackManager.OnHandleVerdict -= HandleVerdict;
+        UIManager.Instance.SetBackgroundMask(false);
 
         base.OnExit(nextUi, nextParam);
     }
@@ -146,7 +148,7 @@ public class TutorialUI : UIController
         current = stage;
         if (stage >= stages.Count)
         {
-            UIManager.SwitchToUi("Select Music");
+            UIManager.SwitchToUi("Main");
             return;
         }
 

@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     public AudioSource UiSoundEffect;
 
     public Image BackgroundImage;
+    public GameObject BackgroundMask;
 
     UIController currentUi;
 
@@ -30,6 +31,12 @@ public class UIManager : MonoBehaviour
         Ui.ForEach(x => x.gameObject.SetActive(false));
         currentUi = Ui[0];
         currentUi.gameObject.SetActive(true);
+    }
+
+    void Start()
+    {
+        var brightness = SaveManager.Save.Settings.BackgroundBrightness;
+        BackgroundImage.color = new Color(brightness, brightness, brightness);
     }
 
     public void SwitchToUi(string ui)
@@ -60,5 +67,9 @@ public class UIManager : MonoBehaviour
     public void ChangeBackgroundImage(Sprite image)
     {
         BackgroundImage.sprite = image;
+    }
+    public void SetBackgroundMask(bool isActive)
+    {
+        BackgroundMask.SetActive(isActive);
     }
 }
