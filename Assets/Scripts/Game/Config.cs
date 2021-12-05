@@ -9,7 +9,7 @@ public static class Config
     public static TimeSpan MaxDelayHit = TimeSpan.FromMilliseconds(200);
     public static TimeSpan Offset = TimeSpan.FromMilliseconds(0);
 
-    public static Vector3 NoteStartPos = new Vector3(0, 3, 10);
+    public static Vector3 NoteStartPos = new Vector3(0, 2, 10);
 
     public static Koreography Koreography;
     public static int SampleRate;
