@@ -832,6 +832,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6c51a46755078c34996479e721fbc90e, type: 2}
   - {fileID: 11400000, guid: 72050be00366aa049a787afb748df8f4, type: 2}
   - {fileID: 11400000, guid: cea6ff6502220a04e95435397d7fab8e, type: 2}
+  - {fileID: 11400000, guid: 05d29c4a23ccd1644873c621b969a598, type: 2}
+  - {fileID: 11400000, guid: 579435d214849e943909645cf0c7817b, type: 2}
   ExpectedHitsInTotal: 0
 --- !u!4 &170500096
 Transform:
@@ -3530,7 +3532,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 960, y: 540}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 689, y: 218}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &726133375
@@ -7767,7 +7769,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: "Play 2;\u6674\u96EA\u6708\u591C"
+          m_StringArgument: "Play 2;\u522B\u541B\u8D4B"
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 514735654}
@@ -8657,7 +8659,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: "Play 2;\u7B5D\u9E23"
+          m_StringArgument: "Play 2;\u821E\u6B65\u751F\u98CE"
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 514735654}

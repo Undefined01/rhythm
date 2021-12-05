@@ -353,7 +353,7 @@
 <NoteInfo>
 <Track>3</Track>
 <NoteType>Pseudo</NoteType>
-<NoteStyle>normal</NoteStyle>
+<NoteStyle>Normal</NoteStyle>
 <Group>0</Group>
 <AppearedAtPos><x>0</x><y>0</y><z>10</z></AppearedAtPos>
 <ShouldHitAtPos><x>4.4</x><y>1</y><z>0</z></ShouldHitAtPos>
@@ -1972,8 +1972,8 @@
 </NoteInfo>
 <NoteInfo>
 <Track>2</Track>
-<NoteType></NoteType>
-<NoteStyle></NoteStyle>
+<NoteType>Single</NoteType>
+<NoteStyle>Normal</NoteStyle>
 <Group>0</Group>
 <AppearedAtPos><x>0</x><y>0</y><z>10</z></AppearedAtPos>
 <ShouldHitAtPos><x>-1.1</x><y>1</y><z>0</z></ShouldHitAtPos>

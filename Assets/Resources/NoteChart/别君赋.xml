@@ -216,16 +216,6 @@
 <NoteStyle>Normal</NoteStyle>
 <Group>0</Group>
 <AppearedAtPos><x>0</x><y>0</y><z>10</z></AppearedAtPos>
-<ShouldHitAtPos><x>-4.4</x><y>1</y><z>0</z></ShouldHitAtPos>
-<AppearedAtSample>739134</AppearedAtSample>
-<ShouldHitAtSample>783234</ShouldHitAtSample>
-</NoteInfo>
-<NoteInfo>
-<Track>1</Track>
-<NoteType>Single</NoteType>
-<NoteStyle>Normal</NoteStyle>
-<Group>0</Group>
-<AppearedAtPos><x>0</x><y>0</y><z>10</z></AppearedAtPos>
 <ShouldHitAtPos><x>2.2</x><y>2</y><z>0</z></ShouldHitAtPos>
 <AppearedAtSample>812634</AppearedAtSample>
 <ShouldHitAtSample>856734</ShouldHitAtSample>
