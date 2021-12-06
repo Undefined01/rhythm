@@ -32,7 +32,7 @@ public class StoryRecord
 public class Save
 {
     public int Version = 0;
-    public static int CurrentVersion = 1;
+    public static int CurrentVersion = 2;
     public Settings Settings { get; set; }
     public List<LevelRecord> Level { get; set; }
     public List<StoryRecord> Story { get; set; }
@@ -45,8 +45,8 @@ public class Save
 
         save.Level = new List<LevelRecord>();
         save.Level.Add(new LevelRecord {
-            Name = "筝鸣",
-            Author = "RADI8, JuggShots, Reggie Yang",
+            Name = "别君赋",
+            Author = "Newton-, 萌珑",
             Chapter = 1,
             Id = 1,
             BestScore = 0,
@@ -54,8 +54,8 @@ public class Save
             AllPerfect = false,
         });
         save.Level.Add(new LevelRecord {
-            Name = "晴雪月夜",
-            Author = "ELE.K",
+            Name = "舞步生风",
+            Author = "带电的笛子Bana-X",
             Chapter = 1,
             Id = 2,
             BestScore = 0,
@@ -63,8 +63,8 @@ public class Save
             AllPerfect = false,
         });
         save.Level.Add(new LevelRecord {
-            Name = "舞步生风",
-            Author = "带电的笛子Bana-X",
+            Name = "晴雪月夜",
+            Author = "ELE.K",
             Chapter = 2,
             Id = 3,
             BestScore = 0,
@@ -72,9 +72,9 @@ public class Save
             AllPerfect = false,
         });
         save.Level.Add(new LevelRecord {
-            Name = "别君赋",
-            Author = "Newton-, 萌珑",
-            Chapter = 3,
+            Name = "筝鸣",
+            Author = "RADI8, JuggShots, Reggie Yang",
+            Chapter = 2,
             Id = 4,
             BestScore = 0,
             FullCombo = false,
