@@ -175,7 +175,10 @@ public class TrackManager : MonoBehaviour
 
     protected void HandleVerdict(object sender, NoteVerdict verdict)
     {
-        Debug.Log($"Verdict #{verdict.Grade} {verdict.OffsetMs} ms");
+        if (sender is Note note)
+            Debug.Log($"Verdict #{note.Info.ShouldHitAtSample} {verdict.Grade} {verdict.OffsetMs} ms");
+        else
+            Debug.Log($"Verdict {verdict.Grade} {verdict.OffsetMs} ms");
         Statistics.Add(verdict);
         OnHandleVerdict?.Invoke(sender, verdict);
     }

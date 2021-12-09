@@ -38,6 +38,8 @@ public class Note : IDisposable
     public Note(NoteInfo info)
     {
         this.Info = info;
+        if (info.NoteType == NoteType.Pseudo)
+            verdict = new NoteVerdict(0);
     }
 
     public void SetNoteObject(GameObject obj)

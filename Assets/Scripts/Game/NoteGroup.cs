@@ -11,9 +11,10 @@ public class NoteGroup
     private int hitCount = 0;
     private bool end;
 
-    public void Add(Note info)
+    public void Add(Note note)
     {
-        notes.Add(info);
+        notes.Add(note);
+        note.OnHasVerdict += UpdateVerdict;
     }
 
     public void UpdateVerdict(object sender, NoteVerdict verdict)

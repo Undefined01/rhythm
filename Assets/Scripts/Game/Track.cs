@@ -29,6 +29,9 @@ public class Track : MonoBehaviour
     KoreographyTrack InstantiateEventTrack;
     KoreographyTrack MissEventTrack;
 
+    bool AutoPlay = true;
+    KoreographyTrack AutoPlayEventTrack;
+
     List<Note> Notes;
     Dictionary<int, NoteGroup> NoteGroups;
 
@@ -74,6 +77,17 @@ public class Track : MonoBehaviour
 
         Koreographer.Instance.RegisterForEvents(InstantiateEventTrack.EventID, InstanciateNote);
         Koreographer.Instance.RegisterForEvents(MissEventTrack.EventID, HandleNoteMiss);
+
+        if (AutoPlay)
+        {
+            AutoPlayEventTrack = ScriptableObject.CreateInstance<KoreographyTrack>();
+            Assert.IsNotNull(AutoPlayEventTrack, $"Cannot create event track");
+            AutoPlayEventTrack.EventID = $"autoPlayEventTrack-{TrackId}";
+            res = koreography.AddTrack(AutoPlayEventTrack);
+            Assert.IsTrue(res);
+
+            Koreographer.Instance.RegisterForEvents(AutoPlayEventTrack.EventID, HandleAutoPlay);
+        }
     }
 
     void SetupNotes()
@@ -88,11 +102,28 @@ public class Track : MonoBehaviour
             insEvt.Payload = new IntPayload { IntVal = idx };
             InstantiateEventTrack.AddEvent(insEvt);
 
+            if (info.NoteType == NoteType.Pseudo)
+                continue;
+
             var missEvt = new KoreographyEvent();
             missEvt.StartSample = info.ShouldHitAtSample + Config.MaxDelayHitSample;
             missEvt.EndSample = missEvt.StartSample;
             missEvt.Payload = new IntPayload { IntVal = idx };
             MissEventTrack.AddEvent(missEvt);
+
+            if (AutoPlay)
+            {
+                var autoPlayEvt = new KoreographyEvent();
+                int offset;
+                if (info.NoteType == NoteType.Single)
+                    offset = (int)UnityEngine.Random.Range(-30.0f, 30.0f);
+                else
+                    offset = 10;
+                autoPlayEvt.StartSample = info.ShouldHitAtSample + Config.MsToSample(offset);
+                autoPlayEvt.EndSample = autoPlayEvt.StartSample;
+                autoPlayEvt.Payload = new IntPayload { IntVal = idx };
+                AutoPlayEventTrack.AddEvent(autoPlayEvt);
+            }
         }
         noteInTrack = new NoteInTrack(Notes);
     }
@@ -109,6 +140,11 @@ public class Track : MonoBehaviour
         {
             koreography.RemoveTrack(MissEventTrack);
             MissEventTrack = null;
+        }
+        if (AutoPlayEventTrack != null)
+        {
+            koreography.RemoveTrack(AutoPlayEventTrack);
+            AutoPlayEventTrack = null;
         }
         koreography = null;
 
@@ -158,7 +194,7 @@ public class Track : MonoBehaviour
             note.SetNoteObject(noteObject);
             break;
         default:
-            return;
+            break;
         }
 
         noteLink.Add(note);
@@ -169,6 +205,11 @@ public class Track : MonoBehaviour
         var note = Notes[evt.GetIntValue()];
         if (note.Verdict == null)
             note.Verdict = NoteVerdict.Miss;
+    }
+
+    public void HandleAutoPlay(KoreographyEvent evt)
+    {
+        Click(true);
     }
 
     public bool Click(bool isBegining)
