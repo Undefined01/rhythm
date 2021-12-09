@@ -209,6 +209,13 @@ public class Track : MonoBehaviour
 
     public void HandleAutoPlay(KoreographyEvent evt)
     {
+        var note = Notes[evt.GetIntValue()];
+        if (note.Verdict != null)
+        {
+            Debug.LogWarning($"Note #{note.Info.ShouldHitAtSample} has been hit");
+            return;
+        }
+        Debug.Log($"Auto play at #{Config.CurrentSample} for #{note.Info.ShouldHitAtSample}");
         Click(true);
     }
 
